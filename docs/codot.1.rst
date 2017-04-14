@@ -11,17 +11,19 @@ Concepts
 --------
 Source File
     A source file is a file created by an application to allow the user to
-    configure that application. An example is ~/.vimrc.
+    configure that application. An example is ~/.vimrc. There is an example
+    source file under EXAMPLES_.
 
 Template File
     A template file is a copy of a source file that has had certains values
     replaced with user-defined identifiers. The format of these identifiers is
-    set by the 'IdentifierFormat' option in settings.conf (see FILES_). All
+    set by the 'IdentifierFormat' option in 'settings.conf' (see FILES_). All
     template files go in the 'templates' directory (see FILES_), which mimics
     the file structure under the user's home directory. That means that the
-    template file for a config file located at ~/.config/foo.conf will be
-    located at .config/foo.conf under the templates directory. There is an
-    example template file under EXAMPLES_.
+    template file for a config file located at ~/.config/foo will be located at
+    .config/foo under the templates directory, and that every template file
+    should correspond to exactly one source file. There is an example template
+    file under EXAMPLES_.
 
 Config File
     A config file is a file created by the user to consolidate settings from
@@ -38,19 +40,21 @@ Config File
     is an example config file under EXAMPLES_.
 
 Identifier
-    An identifier is a string that represents a value in one or more source
-    files. Each identifier corresponds to an option in a config file.
+    An identifier is a string used in one or more template files to represent a
+    value in the corresponding source files. Each identifier corresponds to an
+    option in a config file.
 
 Role
     A role is a way for multiple config files containing the same options to be
     swapped out easily. Example use cases could include color schemes or
-    keybindings. A role named 'foo' consists of a directory in the 'config'
-    directory (see FILES_) named 'foo' that contains every config file that
-    could fill the role as well as a symlink named 'foo.conf' that points to
-    the selected config file under this directory. The selected config file for
-    a role can be switched easily using the **role** command. The 'priority'
-    file should contain the name of the role instead of the name of any
-    individual config file.
+    keybindings. A role consists of multiple config files, only one of which
+    can be selected at any one time. A role named 'foo' consists of a directory
+    in the 'config' directory (see FILES_) named 'foo' that contains every one
+    of the config files that could fufill that role as well as a symlink named
+    'foo.conf' that points to the selected config file under this directory.
+    The selected config file for a role can be switched easily using the
+    **role** command.  The 'priority' file should contain the name of the role
+    instead of the name of any individual config file.
 
 GLOBAL OPTIONS
 ==============
@@ -80,6 +84,20 @@ COMMANDS
 
 EXAMPLES
 ========
+This is an example of a source file. ::
+
+    bar {
+            status_command i3blocks
+            position top
+            font pango:DejaVuSans 12
+
+            colors {
+                statusline	#e0e0e0
+                separator	#838383
+                background	#212121
+            }
+    }
+
 This is an example of a template file. ::
 
     bar {
@@ -88,41 +106,36 @@ This is an example of a template file. ::
             font pango:{{Typeface}} {{FontSize}}
 
             colors {
-                background	{{DarkGreyColor}}
-                statusline	{{WhiteColor}}
-                separator	{{LightGreyColor}}
+                statusline	{{ForegroundColor}}
+                separator	{{AccentColor}}
+                background	{{BackgroundColor}}
             }
     }
 
 This is an example of a config file. ::
 
     # These are colors for the cross-application color scheme.
-    WhiteColor=#e0e0e0
-    DarkGreyColor=#212121
-    LightGreyColor=#838383
+    ForegroundColor=#e0e0e0
+    AccentColor=#838383
+    BackgroundColor=#212121
 
     # These are cross-appliation font settings.
     Typeface=DejaVuSans
     FontSize=12
 
-This is an example of the file structure under the program configuration
-directory. ::
+This is an example of what the file structure could be under the program
+configuration directory. ::
 
     templates/
         .vimrc
-        .Xresources
         .config/
             i3/
                 config
-            dunst/
-                dunstrc
     config/
         desktop.conf
-        text_editors.conf
         color_scheme/
             solarized.conf
             dracula.conf
-            jellybeans.conf
         color_scheme.conf -> color_scheme/solarized.conf
     priority
     settings.conf
