@@ -47,14 +47,14 @@ Identifier
 Role
     A role is a way for multiple config files containing the same options to be
     swapped out easily. Example use cases could include color schemes or
-    keybindings. A role consists of multiple config files, only one of which
-    can be selected at any one time. A role named 'foo' consists of a directory
-    in the 'config' directory (see FILES_) named 'foo' that contains every one
-    of the config files that could fufill that role as well as a symlink named
-    'foo.conf' that points to the selected config file under this directory.
-    The selected config file for a role can be switched easily using the
-    **role** command.  The 'priority' file should contain the name of the role
-    instead of the name of any individual config file.
+    keybindings. A role consists of multiple config files in a subdirectory of
+    the 'config' directory (see FILES_), only one of which can be selected at
+    any one time. The name of this subdirectory is the name of the role. There
+    is a symlink in the 'config' directory which points to the selected role
+    under the subdirectory, the name of which is the name of the role plus the
+    '.conf' extension.  The selected config file for a role can be switched
+    easily using the **role** command.  The 'priority' file should contain the
+    name of the role instead of the name of any individual config file.
 
 GLOBAL OPTIONS
 ==============
