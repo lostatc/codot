@@ -1,0 +1,12 @@
+[Unit]
+Description=Watch for file access in a specific directory
+Documentation=man:codot(1)
+
+[Service]
+Type=simple
+ExecStart=@bindir@/codotd
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

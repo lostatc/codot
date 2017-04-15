@@ -11,8 +11,8 @@ Concepts
 --------
 Source File
     A source file is a file created by an application to allow the user to
-    configure that application. An example is ~/.vimrc. There is an example
-    source file under EXAMPLES_.
+    configure that application (e.g. ~/.vimrc). There is an example source file
+    under EXAMPLES_.
 
 Template File
     A template file is a copy of a source file that has had certains values
@@ -71,17 +71,18 @@ GLOBAL OPTIONS
 COMMANDS
 ========
 **sync** [*options*]
-    Propogate changes in the config files to their respective source files, but
-    only if those source files have not been modified since the last sync.
+    Propogate changes in the config files to all source files for which there
+    is a template file, but only if those source files have not been modified
+    since the last sync.
 
     **-o**, **--overwrite**
         Overwrite the source files even if they've been modified since the last
         sync.
 
 **role** *role_name* [*config_name*]
-    Switch the config file currently filling the role named *role_name*. If
-    *config_name* is specified, it will switch to that config file. Otherwise,
-    it will show a list of config files available for that role.
+    Switch the currently selected config file in the role named *role_name*.
+    If *config_name* is specified, that config file will be selected.
+    Otherwise, it will show a list of config files available for that role.
 
 EXAMPLES
 ========
@@ -165,7 +166,7 @@ FILES
         This is a plain text file which stores the names of all enabled config
         files and roles, one per line. Config files not in this list are
         ignored. Entries higher up in the list take priority over entries lower
-        down the list when the same identifiers appears in multiple config
+        down the list when the same identifiers appear in multiple config
         files.
 
     settings.conf
