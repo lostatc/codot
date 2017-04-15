@@ -17,7 +17,7 @@ Source File
 Template File
     A template file is a copy of a source file that has had certains values
     replaced with user-defined identifiers. The format of these identifiers is
-    set by the 'IdentifierFormat' option in 'settings.conf' (see FILES_). All
+    set by the **IdentifierFormat** option in 'settings.conf' (see FILES_). All
     template files go in the 'templates' directory (see FILES_), which mimics
     the file structure under the user's home directory. That means that the
     template file for a config file located at ~/.config/foo will be located at
@@ -37,7 +37,7 @@ Config File
     ignored unless their names are included in the 'priority' file (see
     FILES_), and their order in this file determines which config files take
     precedence when the same identifier appears in multiple config files. There
-    is an example config file under EXAMPLES_.
+    is an example config file and an example 'priority' file under EXAMPLES_.
 
 Identifier
     An identifier is a string used in one or more template files to represent a
@@ -49,12 +49,13 @@ Role
     swapped out easily. Example use cases could include color schemes or
     keybindings. A role consists of multiple config files in a subdirectory of
     the 'config' directory (see FILES_), only one of which can be selected at
-    any one time. The name of this subdirectory is the name of the role. There
-    is a symlink in the 'config' directory which points to the selected role
-    under the subdirectory, the name of which is the name of the role plus the
-    '.conf' extension.  The selected config file for a role can be switched
-    easily using the **role** command.  The 'priority' file should contain the
-    name of the role instead of the name of any individual config file.
+    any one time. The name of this subdirectory determines the name of the
+    role. There is a symlink in the 'config' directory which points to the
+    selected role under the subdirectory, the name of which is the name of the
+    role plus the '.conf' extension.  The selected config file for a role can
+    be switched easily using the **role** command.  The 'priority' file should
+    contain the name of the role instead of the name of any individual config
+    file.
 
 GLOBAL OPTIONS
 ==============
@@ -123,8 +124,8 @@ This is an example of a config file. ::
     Typeface=DejaVuSans
     FontSize=12
 
-This is an example of what the file structure could be under the program
-configuration directory. ::
+This is an example of what the file structure under the **codot** program
+directory could look like. ::
 
     templates/
         .vimrc
@@ -140,10 +141,15 @@ configuration directory. ::
     priority
     settings.conf
 
+This is an example of what the the 'priority' file could look like. ::
+
+    desktop
+    color_scheme
+
 FILES
 =====
-~/.config/codot
-    This is the **codot** configuration directory. The program will respect
+~/.config/codot/
+    This is the **codot** program directory. The program will respect
     XDG_CONFIG_HOME and, if it is set, put the directory there instead.
 
     templates/
@@ -157,8 +163,10 @@ FILES
 
     priority
         This is a plain text file which stores the names of all enabled config
-        files and roles, one per line. Entries higher up in the list take
-        priority over entries lower down the list.
+        files and roles, one per line. Config files not in this list are
+        ignored. Entries higher up in the list take priority over entries lower
+        down the list when the same identifiers appears in multiple config
+        files.
 
     settings.conf
         This file is for configuring the behavior of **codot**.
