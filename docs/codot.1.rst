@@ -70,10 +70,11 @@ GLOBAL OPTIONS
 
 COMMANDS
 ========
-**sync** [*options*]
-    Propogate changes in the config files to all source files for which there
-    is a template file, but only if those source files have not been modified
-    since the last sync.
+**sync** [*options*] [*config_name*...]
+    Propogate changes in the config files given by *config_name* to all source
+    files for which there is a template file, but only if those source files
+    have not been modified since the last sync. If *config_name* is not
+    specified, then changes in all config files will be propogated.
 
     **-o**, **--overwrite**
         Overwrite the source files even if they've been modified since the last

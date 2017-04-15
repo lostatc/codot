@@ -22,7 +22,7 @@ import os
 import sys
 import argparse
 import pkg_resources
-from textwrap import dedent
+import textwrap
 
 from codot.exceptions import UserInputError
 
@@ -39,7 +39,7 @@ def usage(command: str) -> None:
         normal = emphasis = strong = ""
 
     if not command:
-        help_msg = dedent("""\
+        help_msg = textwrap.dedent("""\
             Usage: {1}codot{0} [{2}global_options{0}] {2}command{0} [{2}command_options{0}] [{2}command_args{0}]
 
             Global options:
@@ -48,32 +48,35 @@ def usage(command: str) -> None:
                 {1}-q{0}, {1}--quiet{0}         Suppress all non-error output.
 
             Commands:
-                {1}sync{0} [{2}options{0}]
-                    Propogate changes in the config files to all source files for which there
-                    is a template file, but only if those source files have not been modified
-                    since the last sync.
+                {1}sync{0} [{2}options{0}] [{2}config_name{0}...]
+                    Propogate changes in the config files given by {2}config_name{0} to all
+                    source files for which there is a template file, but only if those
+                    source files have not been modified since the last sync. If {2}config_name{0}
+                    is not specified, then changes in all config files will be propogated.
 
                 {1}role{0} {2}role_name{0} [{2}config_name{0}]
-                    Switch the currently selected config file in the role named *role_name*.
-                    If *config_name* is specified, that config file will be selected.
+                    Switch the currently selected config file in the role named {2}role_name{0}.
+                    If {2}config_name{0} is specified, that config file will be selected.
                     Otherwise, it will show a list of config files available for that role.
             """)
     elif command == "sync":
-        help_msg = dedent("""\
-            {1}sync{0} [{2}options{0}]
-                Propogate changes in the config files to all source files for which there
-                is a template file, but only if those source files have not been modified
-                since the last sync.
+        help_msg = textwrap.dedent("""\
+            {1}sync{0} [{2}options{0}] [{2}config_name{0}...]
+                Propogate changes in the config files given by {2}config_name{0} to all source
+                files for which there is a template file, but only if those source files
+                have not been modified since the last sync. If {2}config_name{0} is not
+                specified, then changes in all config files will be propogated.
 
                 {1}-o{0}, {1}--overwrite{0}
-                    Overwrite the source files even if they've been modified since the last sync.
+                    Overwrite the source files even if they've been modified since the last
+                    sync.
             """)
     elif command == "role":
-        help_msg = dedent("""\
+        help_msg = textwrap.dedent("""\
             {1}role{0} {2}role_name{0} [{2}config_name{0}]
-                Switch the currently selected config file in the role named *role_name*.
-                If *config_name* is specified, that config file will be selected.
-                Otherwise, it will show a list of config files available for that role.
+                Switch the currently selected config file in the role named {2}role_name{0}. If
+                {2}config_name{0} is specified, that config file will be selected. Otherwise, it
+                will show a list of config files available for that role.
             """)
     else:
         help_msg = ""
@@ -136,6 +139,9 @@ def parse_args() -> dict:
 
     parser_sync = subparsers.add_parser("sync", add_help=False)
     parser_sync.add_argument("--help", action=HelpAction)
+    parser_sync.add_argument("--overwrite", "-o", action="store_true")
+    parser_sync.add_argument(
+        "config_names", nargs="*", default=None, metavar="config names")
     parser_sync.set_defaults(command="sync")
 
     parser_role = subparsers.add_parser("role", add_help=False)
