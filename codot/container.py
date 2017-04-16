@@ -245,5 +245,5 @@ class ProgramInfoFile(JSONFile):
         """
         self.raw_vals.update({
             "LastSync": None,
-        })
+            })
         self.write()

@@ -122,11 +122,11 @@ class QuietAction(argparse.Action):
         sys.stdout = open(os.devnull, "a")
 
 
-def parse_args() -> dict:
+def parse_args() -> argparse.Namespace:
     """Create a dictionary of parsed command-line arguments.
 
     Returns:
-        A dict of command-line argument names and their values.
+        A namespace of command-line argument names and their values.
     """
 
     parser = CustomArgumentParser(add_help=False)
@@ -151,4 +151,4 @@ def parse_args() -> dict:
         "config_name", nargs="?", default=None, metavar="config name")
     parser_role.set_defaults(command="role")
 
-    return vars(parser.parse_args())
+    return parser.parse_args()

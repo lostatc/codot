@@ -20,6 +20,7 @@ along with codot.  If not, see <http://www.gnu.org/licenses/>.
 
 import signal
 import sys
+import argparse
 
 from codot.commands.role import RoleCommand
 from codot.commands.sync import SyncCommand
@@ -46,11 +47,11 @@ def main() -> int:
     return 0
 
 
-def def_command(cmd_args: dict) -> Command:
-    if cmd_args["command"] == "sync":
-        return SyncCommand(cmd_args["config_names"], cmd_args["overwrite"])
-    elif cmd_args["command"] == "role":
-        return RoleCommand(cmd_args["role_name"], cmd_args["config_name"])
+def def_command(cmd_args) -> Command:
+    if cmd_args.command == "sync":
+        return SyncCommand(cmd_args.config_names, cmd_args.overwrite)
+    elif cmd_args.command == "role":
+        return RoleCommand(cmd_args.role_name, cmd_args.config_name)
 
 
 def signal_exception_handler(signum: int, frame) -> None:
