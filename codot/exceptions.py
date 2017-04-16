@@ -29,3 +29,7 @@ class UserInputError(ProgramError):
 
 class StatusError(ProgramError):
     """Raised whenever there is an issue with the status of the program."""
+
+
+class FileParseError(ProgramError):
+    """Raised whenever there is an issue parsing a file."""
