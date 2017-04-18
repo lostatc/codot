@@ -34,4 +34,5 @@ class RoleCommand(Command):
         self.config_name = config_name
 
     def main(self) -> None:
+        super().main()
         self.lock()

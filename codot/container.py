@@ -66,27 +66,6 @@ class ConfigFile:
         except OSError:
             raise FileParseError("could not open the configuration file")
 
-    def write(self, template_path: str) -> None:
-        """Generate a new config file based on the input file."""
-        try:
-            with open(template_path) as infile, open(
-                    self.path, "w") as outfile:
-                for line in infile:
-                    # Skip line if it is a comment.
-                    if (not self._comment_regex.search(line)
-                            and re.search("=", line)):
-                        key, value = line.partition("=")[::2]
-                        key = key.strip()
-                        if key not in self.raw_vals:
-                            continue
-                        # Substitute value in the input file with the value in
-                        # self.raw_vals.
-                        line = key + "=" + self.raw_vals.get(key, "") + "\n"
-                    outfile.write(line)
-
-        except OSError:
-            raise FileParseError("could not open the configuration file")
-
 
 class JSONFile:
     """Parse a JSON-formatted file.

@@ -1,4 +1,4 @@
-"""The main module for the client.
+"""A base class for program commands.
 
 Copyright © 2017 Garrett Powell <garrett@gpowell.net>
 
@@ -19,9 +19,13 @@ along with codot.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os
+import sys
 import abc
 import socket
+import shutil
 
+from codot import (
+    PROGRAM_DIR, TEMPLATES_DIR, CONFIG_DIR, PRIORITY_FILE, SETTINGS_FILE)
 from codot.exceptions import StatusError
 
 
@@ -32,7 +36,24 @@ class Command(abc.ABC):
 
     @abc.abstractmethod
     def main(self) -> None:
-        """Run the command."""
+        """Run the command.
+
+        This also creates the program directory and all files under it if it
+        doesn't already exist.
+        """
+        if not os.path.isdir(PROGRAM_DIR):
+            os.makedirs(PROGRAM_DIR)
+        if not os.path.isdir(TEMPLATES_DIR):
+            os.mkdir(TEMPLATES_DIR)
+        if not os.path.isdir(CONFIG_DIR):
+            os.mkdir(CONFIG_DIR)
+        if not os.path.isfile(PRIORITY_FILE):
+            open(PRIORITY_FILE, "a").close()
+        if not os.path.isfile(SETTINGS_FILE):
+            # TODO: Get this path from setup.py instead of hardcoding it.
+            shutil.copy(
+                os.path.join(sys.prefix, "share/codot/settings.conf"),
+                SETTINGS_FILE)
 
     def lock(self) -> None:
         """Lock the program if not already locked.

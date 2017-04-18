@@ -38,4 +38,5 @@ class SyncCommand(Command):
         self.overwrite = overwrite
 
     def main(self) -> None:
+        super().main()
         self.lock()

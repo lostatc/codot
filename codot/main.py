@@ -1,4 +1,4 @@
-"""The main module for the client.
+"""The main module for the program.
 
 Copyright © 2017 Garrett Powell <garrett@gpowell.net>
 
