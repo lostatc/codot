@@ -17,7 +17,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with codot.  If not, see <http://www.gnu.org/licenses/>.
 """
+import os
 
+from codot import CONFIG_DIR, CONFIG_EXT
+from codot.exceptions import InputError
 from codot.basecommand import Command
 
 
@@ -26,13 +29,47 @@ class RoleCommand(Command):
 
     Attributes:
         role_name: The name of the role to modify.
+        role_path: The absolute path of the role directory.
         config_name: The name of the config file to select for the role.
     """
     def __init__(self, role_name: str, config_name=None) -> None:
         super().__init__()
         self.role_name = role_name
-        self.config_name = config_name
+        self.role_path = os.path.join(CONFIG_DIR, role_name)
+        if config_name:
+            if config_name.endswith(CONFIG_EXT):
+                self.config_name = config_name
+            else:
+                self.config_name = config_name + CONFIG_EXT
+        else:
+            self.config_name = None
 
     def main(self) -> None:
         super().main()
         self.lock()
+        if not os.path.isdir(self.role_path):
+            # Role directory doesn't exist.
+            raise InputError("no such role '{}'".format(self.role_name))
+
+        # Get a list of the names of all available config files.
+        role_configs = {
+            entry.name for entry in os.scandir(self.role_path)
+            if entry.is_file() and entry.name.endswith(CONFIG_EXT)}
+
+        if not self.config_name:
+            # List the names of available config files alphabetically.
+            for config_name in sorted(role_configs):
+                print(config_name.rsplit(sep=CONFIG_EXT, maxsplit=1)[0])
+            return
+
+        # Switch selected config file.
+        if self.config_name not in role_configs:
+            raise InputError(
+                "no such config '{}' in this role".format(self.config_name))
+        try:
+            os.remove(self.role_path + CONFIG_EXT)
+        except FileNotFoundError:
+            pass
+        os.symlink(
+            os.path.join(self.role_path, self.config_name),
+            self.role_path + CONFIG_EXT)

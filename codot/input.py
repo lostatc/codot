@@ -17,14 +17,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with codot.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 import os
 import sys
 import argparse
 import pkg_resources
 import textwrap
 
-from codot.exceptions import UserInputError
+from codot.exceptions import InputError
 
 
 def usage(command: str) -> None:
@@ -88,7 +87,7 @@ def usage(command: str) -> None:
 class CustomArgumentParser(argparse.ArgumentParser):
     """Set custom formatting of error messages for argparse."""
     def error(self, message) -> None:
-        raise UserInputError(message)
+        raise InputError(message)
 
 
 class HelpAction(argparse.Action):

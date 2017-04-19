@@ -23,8 +23,8 @@ class ProgramError(Exception):
     """Base exception for errors anticipated during normal operation."""
 
 
-class UserInputError(ProgramError):
-    """Raised whenever user-provided input is invalid."""
+class InputError(ProgramError):
+    """Raised whenever input is invalid."""
 
 
 class StatusError(ProgramError):
