@@ -83,7 +83,8 @@ COMMANDS
 **role** *role_name* [*config_name*]
     Switch the currently selected config file in the role named *role_name*.
     If *config_name* is specified, that config file will be selected.
-    Otherwise, it will show a list of config files available for that role.
+    Otherwise, it will show a list of config files available for that role as
+    well as which one is currently selected.
 
 EXAMPLES
 ========

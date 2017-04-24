@@ -57,9 +57,14 @@ class RoleCommand(Command):
             if entry.is_file() and entry.name.endswith(CONFIG_EXT)}
 
         if not self.config_name:
-            # List the names of available config files alphabetically.
+            # List the names of available config files alphabetically,
+            # indicating which one is selected.
             for config_name in sorted(role_configs):
-                print(config_name.rsplit(sep=CONFIG_EXT, maxsplit=1)[0])
+                if self.get_selected(self.role_name) == config_name:
+                    print("> ", end="")
+                else:
+                    print("  ", end="")
+                print(config_name.rsplit(CONFIG_EXT, 1)[0])
             return
 
         # Switch selected config file.
@@ -73,3 +78,5 @@ class RoleCommand(Command):
         os.symlink(
             os.path.join(self.role_path, self.config_name),
             self.role_path + CONFIG_EXT)
+        print("Switched '{0}' to '{1}'".format(
+            self.role_name, self.config_name.rsplit(CONFIG_EXT, 1)[0]))

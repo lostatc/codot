@@ -23,7 +23,7 @@ import datetime
 from typing import Any, Optional
 
 from codot.exceptions import FileParseError
-from codot.misc import DictProperty
+from codot.util import DictProperty
 
 
 class ConfigFile:

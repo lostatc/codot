@@ -39,3 +39,4 @@ class SyncCommand(Command):
     def main(self) -> None:
         super().main()
         self.lock()
+
