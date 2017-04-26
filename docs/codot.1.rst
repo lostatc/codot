@@ -17,27 +17,31 @@ Source File
 Template File
     A template file is a copy of a source file that has had certains values
     replaced with user-defined identifiers. The format of these identifiers is
-    set by the **IdentifierFormat** option in 'settings.conf' (see FILES_). All
-    template files go in the 'templates' directory (see FILES_), which mimics
-    the file structure under the user's home directory. That means that the
-    template file for a config file located at ~/.config/foo will be located at
-    .config/foo under the templates directory, and that every template file
-    should correspond to exactly one source file. There is an example template
-    file under EXAMPLES_.
+    set by the **IdentifierFormat** option in 'settings.conf' (see FILES_).
+
+    All template files go in the 'templates' directory (see FILES_), which
+    mimics the file structure under the user's home directory. That means that
+    the template file for a config file located at ~/.config/foo will be
+    located at .config/foo under the templates directory, and that every
+    template file should correspond to exactly one source file. There is an
+    example template file under EXAMPLES_.
 
 Config File
     A config file is a file created by the user to consolidate settings from
-    other applications. Options in this file consist of key-value pairs
-    separated by a '=', where each key corresponds to an identifier in one or
-    more template files. Whenever the **sync** command is run, identifiers in
-    each template file are replaced with their corresponding values from the
-    config files, and those template files then overwrite the source files they
-    were derived from. Config files go in the 'config' directory (see FILES_),
-    and each config file must have the '.conf' extension. Config files are
-    ignored unless their names are included in the 'priority' file (see
-    FILES_), and their order in this file determines which config files take
-    precedence when the same identifier appears in multiple config files. There
-    is an example config file and an example 'priority' file under EXAMPLES_.
+    multiple applications. In this file, lines beginning with a hash symbol '#'
+    serve as comments. Options in this file consist of key-value pairs
+    separated by an equals sign '=', where each key corresponds to an
+    identifier in one or more template files. Whenever the **sync** command is
+    run, identifiers in each template file are replaced with their
+    corresponding values from the config files, and those template files then
+    overwrite the source files they were derived from.
+
+    Config files go in the 'config' directory (see FILES_), and each config
+    file must have the '.conf' extension. Config files are ignored unless their
+    names are included in the 'priority' file (see FILES_), and their order in
+    this file determines which config files take precedence when the same
+    identifier appears in multiple config files. There is an example config
+    file and an example 'priority' file under EXAMPLES_.
 
 Identifier
     An identifier is a string used in one or more template files to represent a
@@ -53,7 +57,7 @@ Role
     role. There is a symlink in the 'config' directory which points to the
     selected role under the subdirectory, the name of which is the name of the
     role plus the '.conf' extension.  The selected config file for a role can
-    be switched easily using the **role** command.  The 'priority' file should
+    be switched easily using the **role** command. The 'priority' file should
     contain the name of the role instead of the name of any individual config
     file.
 
@@ -64,6 +68,9 @@ GLOBAL OPTIONS
 
 **--version**
     Print the version number and exit.
+
+**--debug**
+    Print a full stack trace instead of an error message if an error occurs.
 
 **-q**, **--quiet**
     Suppress all non-error output.

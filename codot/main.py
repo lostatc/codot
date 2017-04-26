@@ -39,8 +39,13 @@ def main() -> int:
         cmd_args = parse_args()
         command = def_command(cmd_args)
         command.main()
-    except ProgramError as e:
-        for message in e.args:
+    except ProgramError as error:
+        try:
+            if cmd_args.debug:
+                raise
+        except NameError:
+            pass
+        for message in error.args:
             print("Error: {}".format(message), file=sys.stderr)
         return 1
     return 0
