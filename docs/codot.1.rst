@@ -77,21 +77,21 @@ GLOBAL OPTIONS
 
 COMMANDS
 ========
-**sync** [*options*] [*config_name*...]
-    Propogate changes in the config files given by *config_name* to all source
-    files for which there is a template file, but only if those source files
-    have not been modified since the last sync. If *config_name* is not
-    specified, then changes in all config files will be propogated.
+**sync** [*options*]
+    Propogate changes in all config files and roles to all source files for
+    which there is a template file, but only if those source files have not
+    been modified since the last sync.
 
     **-o**, **--overwrite**
         Overwrite the source files even if they've been modified since the last
         sync.
 
 **role** *role_name* [*config_name*]
-    Switch the currently selected config file in the role named *role_name*.
-    If *config_name* is specified, that config file will be selected.
-    Otherwise, it will show a list of config files available for that role as
-    well as which one is currently selected.
+    Switch the currently selected config file in the role named *role_name* to
+    *config_name*. If *config_name* is not specified, print a list of config
+    files available for that role and show which one is currently selected. If
+    *role_name* is not specified, print a table of all roles and their selected
+    config files.
 
 EXAMPLES
 ========

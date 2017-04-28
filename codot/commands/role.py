@@ -22,6 +22,7 @@ import os
 from codot import CONFIG_DIR, CONFIG_EXT
 from codot.exceptions import InputError
 from codot.basecommand import Command
+from codot.util import print_table
 
 
 class RoleCommand(Command):
@@ -35,18 +36,32 @@ class RoleCommand(Command):
     def __init__(self, role_name: str, config_name=None) -> None:
         super().__init__()
         self.role_name = role_name
-        self.role_path = os.path.join(CONFIG_DIR, role_name)
-        if config_name:
-            if config_name.endswith(CONFIG_EXT):
-                self.config_name = config_name
-            else:
-                self.config_name = config_name + CONFIG_EXT
-        else:
-            self.config_name = None
+        self.role_path = os.path.join(
+            CONFIG_DIR, role_name) if role_name else None
+        self.config_name = config_name.rsplit(
+            CONFIG_EXT, 1)[0] + CONFIG_EXT if config_name else None
 
     def main(self) -> None:
         super().main()
         self.lock()
+
+        if not self.role_name:
+            role_names = []
+            for entry in os.scandir(CONFIG_DIR):
+                if not entry.is_dir():
+                    continue
+                role_name = entry.name
+                try:
+                    selected_config = os.path.basename(os.readlink(
+                        entry.path + CONFIG_EXT).rsplit(CONFIG_EXT, 1)[0])
+                except FileNotFoundError:
+                    selected_config = ""
+                role_names.append((role_name, selected_config))
+            role_names.sort(key=lambda x: x[1])
+            headers = ["Role", "Selected Config"]
+            print_table(headers, role_names)
+            return
+
         if not os.path.isdir(self.role_path):
             # Role directory doesn't exist.
             raise InputError("no such role '{}'".format(self.role_name))

@@ -30,13 +30,19 @@ def usage(command: str) -> None:
     """Print a usage message."""
 
     if sys.stdout.isatty():
-        normal = chr(27) + "[0m"    # No formatting.
-        strong = chr(27) + "[1m"    # Bold, used for commands/options.
-        emphasis = chr(27) + "[4m"  # Underlined, used for arguments.
+        format_chars = [
+            chr(27) + "[0m",    # No formatting.
+            chr(27) + "[1m",    # Bold, used for commands/options.
+            chr(27) + "[4m"     # Underlined, used for arguments.
+            ]
     else:
         # Don't use colors if stdout isn't a tty.
-        normal = emphasis = strong = ""
+        format_chars = ["", "", ""]
 
+    # Repeat the command descriptions in the code so that one can be made
+    # more detailed in the future. textwrap.wrap() can't be used here in leu
+    # of manual formatting because it doesn't account for the terminal
+    # control codes.
     if not command:
         help_msg = textwrap.dedent("""\
             Usage: {1}codot{0} [{2}global_options{0}] {2}command{0} [{2}command_options{0}] [{2}command_args{0}]
@@ -49,24 +55,25 @@ def usage(command: str) -> None:
                 {1}-q{0}, {1}--quiet{0}         Suppress all non-error output.
 
             Commands:
-                {1}sync{0} [{2}options{0}] [{2}config_name{0}...]
-                    Propogate changes in the config files given by {2}config_name{0} to all
-                    source files for which there is a template file, but only if those
-                    source files have not been modified since the last sync. If {2}config_name{0}
-                    is not specified, then changes in all config files will be propogated.
+                {1}sync{0} [{2}options{0}]
+                    Propogate changes in all config files and roles to all source files for
+                    which there is a template file, but only if those source files have not
+                    been modified since the last sync.
 
-                {1}role{0} {2}role_name{0} [{2}config_name{0}]
-                    Switch the currently selected config file in the role named {2}role_name{0}.
-                    If {2}config_name{0} is specified, that config file will be selected.
-                    Otherwise, it will show a list of config files available for that role.
+                {1}role{0} [{2}role_name{0}] [{2}config_name{0}]
+                    Switch the currently selected config file in the role named {2}role_name{0}
+                    to {2}config_name{0}. If {2}config_name{0} is not specified, print a list of config
+                    files available for that role and show which one is currently selected. If
+                    {2}role_name{0} is not specified, print a table of all roles and their
+                    selected config files.
+
             """)
     elif command == "sync":
         help_msg = textwrap.dedent("""\
-            {1}sync{0} [{2}options{0}] [{2}config_name{0}...]
-                Propogate changes in the config files given by {2}config_name{0} to all source
-                files for which there is a template file, but only if those source files
-                have not been modified since the last sync. If {2}config_name{0} is not
-                specified, then changes in all config files will be propogated.
+            {1}sync{0} [{2}options{0}]
+                Propogate changes in all config files and roles to all source files for
+                which there is a template file, but only if those source files have not
+                been modified since the last sync.
 
                 {1}-o{0}, {1}--overwrite{0}
                     Overwrite the source files even if they've been modified since the last
@@ -74,16 +81,18 @@ def usage(command: str) -> None:
             """)
     elif command == "role":
         help_msg = textwrap.dedent("""\
-            {1}role{0} {2}role_name{0} [{2}config_name{0}]
-                Switch the currently selected config file in the role named {2}role_name{0}. If
-                {2}config_name{0} is specified, that config file will be selected. Otherwise, it
-                will show a list of config files available for that role.
+            {1}role{0} [{2}role_name{0}] [{2}config_name{0}]
+                Switch the currently selected config file in the role named {2}role_name{0}
+                to {2}config_name{0}. If {2}config_name{0} is not specified, print a list of config
+                files available for that role and show which one is currently selected. If
+                {2}role_name{0} is not specified, print a table of all roles and their
+                selected config files.
             """)
     else:
         help_msg = ""
 
-    help_msg = help_msg.format(normal, strong, emphasis)
-    print(help_msg)
+    help_msg = help_msg.format(*format_chars)
+    print(help_msg, end="")
 
 
 class CustomArgumentParser(argparse.ArgumentParser):
@@ -142,13 +151,12 @@ def parse_args() -> argparse.Namespace:
     parser_sync = subparsers.add_parser("sync", add_help=False)
     parser_sync.add_argument("--help", action=HelpAction)
     parser_sync.add_argument("--overwrite", "-o", action="store_true")
-    parser_sync.add_argument(
-        "config_names", nargs="*", default=None, metavar="config names")
     parser_sync.set_defaults(command="sync")
 
     parser_role = subparsers.add_parser("role", add_help=False)
     parser_role.add_argument("--help", action=HelpAction)
-    parser_role.add_argument("role_name", metavar="role name")
+    parser_role.add_argument(
+        "role_name", nargs="?", default=None, metavar="role name")
     parser_role.add_argument(
         "config_name", nargs="?", default=None, metavar="config name")
     parser_role.set_defaults(command="role")

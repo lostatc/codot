@@ -17,6 +17,51 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with codot.  If not, see <http://www.gnu.org/licenses/>.
 """
+import os
+from typing import Collection
+
+
+def rec_scan(path: str):
+    """Recursively scan a directory tree and yield an os.DirEntry object.
+
+    Args:
+        path: The path of the directory to scan.
+    """
+    for entry in os.scandir(path):
+        yield entry
+        if entry.is_dir(follow_symlinks=False):
+            yield from rec_scan(entry.path)
+
+
+def print_table(headers: list, data: Collection[tuple]) -> None:
+    """Print input values in a formatted ascii table.
+
+    All values in the table are left-aligned, and columns are as wide as
+    their longest value.
+
+    Args:
+        data: The values used to fill the body of the table. Each item in this
+            collection represents a row in the table.
+        headers: The values to use as column headings.
+    """
+    column_lengths = []
+    for content, header in zip(zip(*data), headers):
+        column = [str(item) for item in [*content, header]]
+        column_lengths.append(len(max(column, key=len)))
+
+    # Print the table header.
+    print(" | ".join([
+        "{0:<{1}}".format(name, width)
+        for name, width in zip(headers, column_lengths)]))
+
+    # Print the separator between the header and body.
+    print("-+-".join(["-"*length for length in column_lengths]))
+
+    # Print the table body.
+    for row in data:
+        print(" | ".join([
+            "{0:<{1}}".format(field, width)
+            for field, width in zip(row, column_lengths)]))
 
 
 class DictProperty:

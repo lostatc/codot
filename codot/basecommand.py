@@ -75,6 +75,7 @@ class Command(abc.ABC):
 
     @staticmethod
     def get_selected(role_name: str) -> Optional[str]:
+        """Get the name of the selected config file for a given role."""
         role_path = os.path.join(CONFIG_DIR, role_name)
         try:
             selected_name = os.path.basename(
