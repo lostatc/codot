@@ -1,6 +1,7 @@
 """Consolidate your dotfiles."""
 import os
 
+HOME_DIR = os.path.expanduser("~/")
 XDG_CONFIG_HOME = os.getenv("XDG_CONFIG_HOME", os.path.expanduser("~/.config"))
 
 PROGRAM_DIR = os.path.join(XDG_CONFIG_HOME, "codot")

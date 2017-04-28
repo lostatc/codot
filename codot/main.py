@@ -53,7 +53,7 @@ def main() -> int:
 
 def def_command(cmd_args) -> Command:
     if cmd_args.command == "sync":
-        return SyncCommand(cmd_args.config_names, cmd_args.overwrite)
+        return SyncCommand(cmd_args.overwrite)
     elif cmd_args.command == "role":
         return RoleCommand(cmd_args.role_name, cmd_args.config_name)
 
