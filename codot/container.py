@@ -20,6 +20,7 @@ along with codot.  If not, see <http://www.gnu.org/licenses/>.
 import re
 import json
 import datetime
+import time
 from typing import Any, Optional
 
 from codot.exceptions import FileParseError
@@ -30,13 +31,14 @@ class ConfigFile:
     """Parse a configuration file.
 
     Attributes:
-        _comment_regex: Regex that denotes a comment line.
+        COMMENT_REGEX: A regex object that denotes a comment line.
         path: The path of the configuration file.
         raw_vals: A dict of unmodified config value strings.
         vals: This dict is exactly the same as raw_vals. It exists so that
             subclasses can use the same interface.
     """
-    _comment_regex = re.compile(r"^\s*#")
+    COMMENT_REGEX = re.compile(r"^\s*#")
+    SEPARATOR = "="
 
     def __init__(self, path: str) -> None:
         self.path = path
@@ -58,9 +60,9 @@ class ConfigFile:
             with open(self.path) as file:
                 for line in file:
                     # Skip line if it is a comment.
-                    if (not self._comment_regex.search(line)
-                            and re.search("=", line)):
-                        key, value = line.partition("=")[::2]
+                    if (not self.COMMENT_REGEX.search(line)
+                            and self.SEPARATOR in line):
+                        key, value = line.partition(self.SEPARATOR)[::2]
                         self.raw_vals[key.strip()] = value.strip()
         except OSError:
             raise FileParseError("could not open the configuration file")
@@ -147,8 +149,10 @@ class ProgramConfigFile(ConfigFile):
         if key == "IdentifierFormat":
             if not value:
                 return "must not be blank"
-            elif not re.search("%s", value):
+            elif value.count("%s") < 1:
                 return "must contain the variable '%s'"
+            elif value.count("%s") > 1:
+                return "must not contain more than one variable '%s'"
 
     def check_all(self, check_empty=True, context="config file") -> None:
         errors = []
@@ -198,7 +202,7 @@ class ProgramInfoFile(JSONFile):
         if value is not None:
             if key == "LastSync":
                 value = datetime.datetime.strptime(
-                    value, "%Y-%m-%dT%H:%M:%S").replace(
+                    value, "%Y-%m-%dT%H:%M:%S.%f").replace(
                         tzinfo=datetime.timezone.utc).timestamp()
 
         return value
@@ -208,8 +212,11 @@ class ProgramInfoFile(JSONFile):
         """Set individual values."""
         if value is not None:
             if key == "LastSync":
+                # Use strftime() instead of isoformat() because the latter
+                # doesn't print the decimal point if the microsecond is 0,
+                # which would prevent it from being parsed by strptime().
                 value = datetime.datetime.utcfromtimestamp(
-                    int(value)).strftime("%Y-%m-%dT%H:%M:%S")
+                    value).strftime("%Y-%m-%dT%H:%M:%S.%f")
         self.raw_vals[key] = value
 
     def generate(self) -> None:
@@ -222,6 +229,6 @@ class ProgramInfoFile(JSONFile):
             name: The name of the profile to use for the unique ID.
         """
         self.raw_vals.update({
-            "LastSync": None,
+            "LastSync": time.time(),
             })
         self.write()
