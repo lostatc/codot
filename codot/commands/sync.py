@@ -51,6 +51,7 @@ class SyncCommand(Command):
         super().main()
         self.lock()
         self.cfg_file.read()
+        self.cfg_file.check_all()
         try:
             self.info_file.read()
         except FileNotFoundError:

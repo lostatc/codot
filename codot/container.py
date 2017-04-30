@@ -98,7 +98,6 @@ class ProgramConfigFile(ConfigFile):
         _false_vals: A list of strings that are recognized as boolean false.
         _all_keys: A list of all keys that are recognized in the config file.
         _bool_keys: A list of keys that must have boolean values.
-        _default_vals: A dict of default values for config keys.
         path: The path of the configuration file.
         raw_vals: A dict of unmodified config value strings.
         vals: A dict property of parsed config values.
@@ -111,10 +110,6 @@ class ProgramConfigFile(ConfigFile):
     _bool_keys = [
         "OverwriteAlways"
         ]
-    _default_vals = {
-        "IdentifierFormat": "{{%s}}",
-        "OverwriteAlways":  "no"
-        }
 
     @DictProperty
     def vals(self, key) -> Any:
@@ -126,8 +121,6 @@ class ProgramConfigFile(ConfigFile):
         """
         if key in self.raw_vals:
             value = self.raw_vals[key]
-        elif key in self._default_vals:
-            value = self._default_vals[key]
         else:
             value = None
 
@@ -142,9 +135,9 @@ class ProgramConfigFile(ConfigFile):
 
     def _check_value(self, key: str, value: str) -> Optional[str]:
         # Check boolean values.
-        if key in self._bool_keys and value:
-            if value.lower() not in (self._true_vals + self._false_vals):
-                return "must have a boolean value"
+        if (key in self._bool_keys
+                and value.lower() not in (self._true_vals + self._false_vals)):
+            return "must have a boolean value"
 
         if key == "IdentifierFormat":
             if not value:
@@ -152,15 +145,19 @@ class ProgramConfigFile(ConfigFile):
             elif value.count("%s") < 1:
                 return "must contain the variable '%s'"
             elif value.count("%s") > 1:
-                return "must not contain more than one variable '%s'"
+                return "must not contain more than one instance of '%s'"
 
     def check_all(self, check_empty=True, context="config file") -> None:
-        errors = []
+        parse_errors = []
 
         # Check that all key names are valid.
+        missing_keys = set(self._all_keys) - self.raw_vals.keys()
         unrecognized_keys = self.raw_vals.keys() - set(self._all_keys)
+        for key in missing_keys:
+            parse_errors.append(
+                "{0}: missing required option '{1}'".format(context, key))
         for key in unrecognized_keys:
-            errors.append(
+            parse_errors.append(
                 "{0}: unrecognized option '{1}'".format(context, key))
 
         # Check values for valid syntax.
@@ -168,11 +165,11 @@ class ProgramConfigFile(ConfigFile):
             if check_empty or not check_empty and value:
                 err_msg = self._check_value(key, value)
                 if err_msg:
-                    errors.append(
+                    parse_errors.append(
                         "{0}: '{1}' {2}".format(context, key, err_msg))
 
-        if errors:
-            raise FileParseError(*errors)
+        if parse_errors:
+            raise FileParseError(*parse_errors)
 
 
 class ProgramInfoFile(JSONFile):
