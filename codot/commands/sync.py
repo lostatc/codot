@@ -21,12 +21,14 @@ import os
 import time
 import tempfile
 import shutil
+import re
+import contextlib
 from typing import Collection
 
 from codot import (
     HOME_DIR, TEMPLATES_DIR, CONFIG_DIR, INFO_FILE, SETTINGS_FILE,
     PRIORITY_FILE, CONFIG_EXT)
-from codot.exceptions import StatusError
+from codot.exceptions import StatusError, InputError
 from codot.util import rec_scan, rshave
 from codot.container import ConfigFile, ProgramInfoFile, ProgramConfigFile
 from codot.basecommand import Command
@@ -98,23 +100,54 @@ class SyncCommand(Command):
             config_file.read()
             config_values.update(config_file.raw_vals)
 
-        # Update the source files with values from the config files.
+        identifier_regex = re.compile(
+            re.escape(self.cfg_file.vals["IdentifierFormat"]).replace(
+                r"\%s", r"([\w-]+)"))
+
+        # Replace identifiers in template files with values from config files.
+        tmp_paths = []
+        tmp_dir = tempfile.TemporaryDirectory(prefix="codot-")
+        input_errors = []
         for template_path, source_path in template_pairs:
-            # A temporary file is used to make updating the source file
-            # a somewhat atomic operation.
-            tmp_file = tempfile.NamedTemporaryFile(mode="w+", delete=False)
-            with open(template_path, "r") as template_file:
+            with contextlib.ExitStack() as stack:
+                # Temporary files are used to make updating the source files
+                # a somewhat atomic operation. A temporary directory is used so
+                # that the temp files are all cleaned up on program exit
+                # without having to keep them open.
+                tmp_file = stack.enter_context(
+                    tempfile.NamedTemporaryFile(
+                        mode="w+", dir=tmp_dir.name, delete=False))
+                template_file = stack.enter_context(
+                    open(template_path, "r"))
+
                 for line in template_file:
                     new_line = line
-                    for identifier, value in config_values.items():
+                    for identifier_name in identifier_regex.findall(line):
+                        if identifier_name not in config_values.keys():
+                            input_errors.append(
+                                "the identifier '{}' ".format(identifier_name)
+                                + "is not in any enabled config file")
+                            continue
                         new_line = new_line.replace(
                             self.cfg_file.vals["IdentifierFormat"].replace(
-                                "%s", identifier),
-                            value)
+                                "%s", identifier_name),
+                            config_values[identifier_name])
                     tmp_file.write(new_line)
-            tmp_file.close()
+
+            # Only overwrite source files once all template files have been
+            # checked for recognized identifiers.
+            tmp_paths.append(tmp_file.name)
+
+        # There were identifiers in one or more template files that are
+        # not in any config files.
+        if input_errors:
+            raise InputError(*input_errors)
+
+        # Overwrite source files with updated template files.
+        for file_tuple in zip(tmp_paths, template_pairs):
+            tmp_path, (template_path, source_path) = file_tuple
             os.makedirs(os.path.dirname(source_path), exist_ok=True)
-            shutil.move(tmp_file.name, source_path)
+            shutil.move(tmp_path, source_path)
 
         # The sync is now complete. Update the time of the last sync in the
         # info file.

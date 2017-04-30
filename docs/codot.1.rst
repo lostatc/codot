@@ -16,8 +16,7 @@ Source File
 
 Template File
     A template file is a copy of a source file that has had certains values
-    replaced with user-defined identifiers. The format of these identifiers is
-    set by the **IdentifierFormat** option in 'settings.conf' (see FILES_).
+    replaced with user-defined identifiers.
 
     All template files go in the 'templates' directory (see FILES_), which
     mimics the file structure under the user's home directory. That means that
@@ -28,13 +27,16 @@ Template File
 
 Config File
     A config file is a file created by the user to consolidate settings from
-    multiple applications. In this file, lines beginning with a hash symbol '#'
-    serve as comments. Options in this file consist of key-value pairs
-    separated by an equals sign '=', where each key corresponds to an
-    identifier in one or more template files. Whenever the **sync** command is
-    run, identifiers in each template file are replaced with their
-    corresponding values from the config files, and those template files then
-    overwrite the source files they were derived from.
+    multiple applications. Config files have the following format:
+
+    * Lines starting with a hash symbol '#' serve as comments.
+    * Options in this file consist of key-value pairs separated by an equals
+      sign '=', where each key corresponds to the name of an identifier in one
+      or more template files.
+
+    Whenever the **sync** command is run, identifiers in each template file are
+    replaced with their corresponding values from the config files, and those
+    template files then overwrite the source files they were derived from.
 
     Config files go in the 'config' directory (see FILES_), and each config
     file must have the '.conf' extension. Config files are ignored unless their
@@ -45,8 +47,13 @@ Config File
 
 Identifier
     An identifier is a string used in one or more template files to represent a
-    value in the corresponding source files. Each identifier corresponds to an
-    option in a config file.
+    value in the corresponding source files. Each identifier has a name, which
+    is an alphanumeric substring that corresponds to the name of an option in
+    one or more config files. The default identifier format is '{{%s}}', where
+    '%s' represents the name of the identifier, but this can be changed in the
+    'settings.conf' file (see FILES_). The format of an identifier should be
+    such that it doesn't conflict with the syntax used in any of the source
+    files. Identifers in tempalte files can not span multiple lines.
 
 Role
     A role is a way for multiple config files containing the same options to be
