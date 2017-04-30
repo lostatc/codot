@@ -20,8 +20,7 @@ along with codot.  If not, see <http://www.gnu.org/licenses/>.
 import os
 from typing import Optional
 
-from codot import CONFIG_DIR, CONFIG_EXT
-from codot.exceptions import InputError
+from codot import CONFIG_DIR, CONFIG_EXT, InputError
 from codot.basecommand import Command
 from codot.util import print_table, rshave
 

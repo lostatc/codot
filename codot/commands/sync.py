@@ -27,8 +27,7 @@ from typing import Collection
 
 from codot import (
     HOME_DIR, TEMPLATES_DIR, CONFIG_DIR, INFO_FILE, SETTINGS_FILE,
-    PRIORITY_FILE, CONFIG_EXT)
-from codot.exceptions import StatusError, InputError
+    PRIORITY_FILE, CONFIG_EXT, InputError, StatusError)
 from codot.util import rec_scan, rshave
 from codot.container import ConfigFile, ProgramInfoFile, ProgramConfigFile
 from codot.basecommand import Command

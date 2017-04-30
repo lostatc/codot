@@ -23,7 +23,7 @@ import argparse
 import pkg_resources
 import textwrap
 
-from codot.exceptions import InputError
+from codot import InputError
 
 
 def usage(command: str) -> None:

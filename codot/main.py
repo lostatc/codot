@@ -23,7 +23,7 @@ import argparse
 
 from codot.commands.role import RoleCommand
 from codot.commands.sync import SyncCommand
-from codot.exceptions import ProgramError
+from codot import ProgramError
 from codot.input import parse_args
 from codot.basecommand import Command
 
