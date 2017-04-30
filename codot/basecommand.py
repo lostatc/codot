@@ -72,14 +72,3 @@ class Command(abc.ABC):
         except socket.error:
             raise StatusError(
                 "another operation on this profile is already taking place")
-
-    @staticmethod
-    def get_selected(role_name: str) -> Optional[str]:
-        """Get the name of the selected config file for a given role."""
-        role_path = os.path.join(CONFIG_DIR, role_name)
-        try:
-            selected_name = os.path.basename(
-                os.readlink(role_path + CONFIG_EXT))
-            return selected_name
-        except FileNotFoundError:
-            return None

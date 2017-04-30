@@ -18,11 +18,12 @@ You should have received a copy of the GNU General Public License
 along with codot.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
+from typing import Optional
 
 from codot import CONFIG_DIR, CONFIG_EXT
 from codot.exceptions import InputError
 from codot.basecommand import Command
-from codot.util import print_table
+from codot.util import print_table, rshave
 
 
 class RoleCommand(Command):
@@ -33,13 +34,14 @@ class RoleCommand(Command):
         role_path: The absolute path of the role directory.
         config_name: The name of the config file to select for the role.
     """
-    def __init__(self, role_name: str, config_name=None) -> None:
+    def __init__(
+            self, role_name: Optional[str], config_name=Optional[str]) -> None:
         super().__init__()
         self.role_name = role_name
         self.role_path = os.path.join(
             CONFIG_DIR, role_name) if role_name else None
-        self.config_name = config_name.rsplit(
-            CONFIG_EXT, 1)[0] + CONFIG_EXT if config_name else None
+        self.config_name = rshave(
+            config_name, CONFIG_EXT) + CONFIG_EXT if config_name else None
 
     def main(self) -> None:
         super().main()
@@ -52,8 +54,8 @@ class RoleCommand(Command):
                     continue
                 role_name = entry.name
                 try:
-                    selected_config = os.path.basename(os.readlink(
-                        entry.path + CONFIG_EXT).rsplit(CONFIG_EXT, 1)[0])
+                    selected_config = os.path.basename(rshave(
+                        os.readlink(entry.path + CONFIG_EXT), CONFIG_EXT))
                 except FileNotFoundError:
                     selected_config = ""
                 role_names.append((role_name, selected_config))
@@ -75,11 +77,16 @@ class RoleCommand(Command):
             # List the names of available config files alphabetically,
             # indicating which one is selected.
             for config_name in sorted(role_configs):
-                if self.get_selected(self.role_name) == config_name:
+                try:
+                    selected_name = os.path.basename(
+                        os.readlink(self.role_path + CONFIG_EXT))
+                except FileNotFoundError:
+                    selected_name = None
+                if selected_name == config_name:
                     print("> ", end="")
                 else:
                     print("  ", end="")
-                print(config_name.rsplit(CONFIG_EXT, 1)[0])
+                print(rshave(config_name, CONFIG_EXT))
             return
 
         # Switch selected config file.
@@ -94,4 +101,4 @@ class RoleCommand(Command):
             os.path.join(self.role_path, self.config_name),
             self.role_path + CONFIG_EXT)
         print("Switched '{0}' to '{1}'".format(
-            self.role_name, self.config_name.rsplit(CONFIG_EXT, 1)[0]))
+            self.role_name, rshave(self.config_name, CONFIG_EXT)))

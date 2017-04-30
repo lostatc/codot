@@ -21,11 +21,31 @@ import os
 from typing import Collection
 
 
+def rshave(string: str, substring: str) -> str:
+    """Remove the first occurrence of a substring starting from the right.
+
+    Args:
+        string: The string to remove the substring from.
+        substring: The substring to remove from the string. If this is an empty
+            string or None, then nothing is removed.
+
+    Returns:
+        The original string with the substring removed.
+    """
+    if substring:
+        return "".join(string.rsplit(substring, 1))
+    else:
+        return string
+
+
 def rec_scan(path: str):
     """Recursively scan a directory tree and yield an os.DirEntry object.
 
     Args:
         path: The path of the directory to scan.
+
+    Yields:
+        os.DirEntry objects for each path under the directory recursively.
     """
     for entry in os.scandir(path):
         yield entry

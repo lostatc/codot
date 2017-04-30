@@ -229,6 +229,7 @@ class ProgramInfoFile(JSONFile):
             name: The name of the profile to use for the unique ID.
         """
         self.raw_vals.update({
-            "LastSync": time.time(),
+            "LastSync": None,
             })
+        self.vals["LastSync"] = time.time()
         self.write()
