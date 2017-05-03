@@ -2,7 +2,7 @@
 
 import sys
 
-from codot.main import daemon
+from codot.cli import daemon
 
 if __name__ == "__main__":
     sys.exit(daemon())

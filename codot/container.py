@@ -24,7 +24,7 @@ import time
 from typing import Any, Optional
 
 from codot import FileParseError
-from codot.util import DictProperty
+from codot.utils import DictProperty
 
 
 class ConfigFile:

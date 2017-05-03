@@ -2,7 +2,7 @@
 
 import sys
 
-from codot.main import main
+from codot.cli import main
 
 if __name__ == "__main__":
     sys.exit(main())

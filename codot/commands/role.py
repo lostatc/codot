@@ -22,7 +22,7 @@ from typing import Optional
 
 from codot import CONFIG_DIR, CONFIG_EXT, InputError
 from codot.basecommand import Command
-from codot.util import print_table, rshave
+from codot.utils import print_table, rshave
 
 
 class RoleCommand(Command):
