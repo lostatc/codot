@@ -78,7 +78,9 @@ class SyncCommand(Command):
                         + source_path)
                 source_mtime = os.stat(source_path).st_mtime
             except FileNotFoundError:
-                source_mtime = 0
+                # Template files without a corresponding source file are
+                # skipped.
+                continue
 
             if (source_mtime <= self.info_file.vals["LastSync"]
                     or overwrite_source):

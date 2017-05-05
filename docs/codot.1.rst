@@ -22,7 +22,8 @@ Template File
     mimics the file structure under the user's home directory. That means that
     the template file for a config file located at ~/.config/foo will be
     located at .config/foo under the templates directory, and that every
-    template file should correspond to exactly one source file. There is an
+    template file should correspond to exactly one source file. Template files
+    are ignored unless the corresponding source file exists. There is an
     example template file under EXAMPLES_.
 
 Config File
@@ -67,6 +68,12 @@ Role
     be switched easily using the **role** command. The 'priority' file should
     contain the name of the role instead of the name of any individual config
     file.
+
+Daemon
+------
+The daemon monitors the filesystem for changes and automatically runs the
+**sync** command whenever a config file, a template file or the 'priority' file
+is modofied.
 
 GLOBAL OPTIONS
 ==============

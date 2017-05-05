@@ -32,10 +32,12 @@ class ConfigFile:
 
     Attributes:
         COMMENT_REGEX: A regex object that denotes a comment line.
+        SEPARATOR: The first instance of this character on each line of the
+            config file separates the key from the value.
         path: The path of the configuration file.
         raw_vals: A dict of unmodified config value strings.
-        vals: This dict is exactly the same as raw_vals. It exists so that
-            subclasses can use the same interface.
+        vals: This dict property is exactly the same as raw_vals. It exists so
+            that subclasses can use the same interface.
     """
     COMMENT_REGEX = re.compile(r"^\s*#")
     SEPARATOR = "="

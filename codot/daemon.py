@@ -24,7 +24,7 @@ import subprocess
 import pyinotify
 
 from codot import (
-    CONFIG_DIR, TEMPLATES_DIR, PROGRAM_DIR, INFO_FILE, SETTINGS_FILE,
+    HOME_DIR, CONFIG_DIR, TEMPLATES_DIR, PROGRAM_DIR, INFO_FILE, SETTINGS_FILE,
     PRIORITY_FILE, CONFIG_EXT)
 
 
@@ -54,14 +54,27 @@ class Daemon:
         """Initiate a sync in a subprocess."""
         # IN_CLOSE_WRITE will always fire with IN_CREATE, so ignore IN_CREATE.
         if not event.dir and event.maskname == "IN_CLOSE_WRITE":
-            # TODO: Prevent text editor swap files in the templates
-            # directory from causing the 'sync' command to be called more
-            # than necessary.
             watch_path = self.wm.get_path(event.wd)
-            if ((watch_path == CONFIG_DIR and event.name.endswith(CONFIG_EXT))
-                    or os.path.commonpath([
-                        watch_path, TEMPLATES_DIR]) == TEMPLATES_DIR
-                    or event.pathname == PRIORITY_FILE):
+            valid_file = False
+            if os.path.commonpath([
+                    watch_path, TEMPLATES_DIR]) == TEMPLATES_DIR:
+                # File is under the templates directory.
+                source_path = os.path.join(
+                    HOME_DIR, os.path.relpath(event.pathname, TEMPLATES_DIR))
+                if os.path.isfile(source_path):
+                    # The corresponding source file exists.
+                    valid_file = True
+            elif (os.path.commonpath([
+                    watch_path, CONFIG_DIR]) == CONFIG_DIR
+                    and event.name.endswith(CONFIG_EXT)):
+                # File is under the config directory and has the proper
+                # extension.
+                valid_file = True
+            elif event.pathname == PRIORITY_FILE:
+                # File is the priority file.
+                valid_file = True
+
+            if valid_file:
                 cmd = subprocess.Popen(
                     ["codot", "--debug", "sync"], bufsize=1,
                     stdin=subprocess.PIPE, stdout=subprocess.PIPE,
@@ -70,7 +83,7 @@ class Daemon:
                 # Print the subprocess's stderr to stderr so that it is
                 # added to the journal.
                 for line in cmd.stderr:
-                    if line.strip():
+                    if line:
                         print(line, file=sys.stderr, end="")
                 cmd.wait()
                 sys.stderr.flush()

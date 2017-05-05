@@ -1,1 +1,1 @@
-"""Manage cli program commands."""
+"""Program commands."""
