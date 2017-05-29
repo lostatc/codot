@@ -84,9 +84,9 @@ class RoleCommand(Command):
                 if selected_name == config_name:
                     print_output = (
                         "* "
-                        + chr(27) + "[32m"
+                        + chr(27) + "[32m"  # ANSI green text
                         + rclip(config_name, CONFIG_EXT)
-                        + chr(27) + "[0m")
+                        + chr(27) + "[0m")  # ANSI normal text
                 else:
                     print_output = "  " + rclip(config_name, CONFIG_EXT)
                 print(print_output)
