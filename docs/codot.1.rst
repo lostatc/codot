@@ -100,9 +100,9 @@ COMMANDS
         Overwrite the source files even if they've been modified since the last
         sync.
 
-**role** *role_name* [*config_name*]
-    Switch the currently selected config file in the role named *role_name* to
-    *config_name*. If *config_name* is not specified, print a list of config
+**role** [*role_name* [*config_name*]]
+    Make *config_name* the currently selected config file in the role named
+    *role_name*. If *config_name* is not specified, print a list of config
     files available for that role and show which one is currently selected. If
     *role_name* is not specified, print a table of all roles and their selected
     config files.
