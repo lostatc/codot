@@ -98,20 +98,31 @@ class ProgramConfigFile(ConfigFile):
     Attributes:
         _true_vals: A list of strings that are recognized as boolean true.
         _false_vals: A list of strings that are recognized as boolean false.
+        _req_keys: A list of config keys that must be included in the config
+            file.
+        _opt_keys: A list of config keys that may be commented out or omitted.
         _all_keys: A list of all keys that are recognized in the config file.
-        _bool_keys: A list of keys that must have boolean values.
+        _bool_keys: A subset of config keys that must have boolean values.
+        _defaults: A dictionary of default string values for optional config
+            keys.
         path: The path of the configuration file.
         raw_vals: A dict of unmodified config value strings.
         vals: A dict property of parsed config values.
     """
     _true_vals = ["yes", "true"]
     _false_vals = ["no", "false"]
-    _all_keys = [
+    _req_keys = []
+    _opt_keys = [
         "IdentifierFormat", "OverwriteAlways"
         ]
+    _all_keys = _req_keys + _opt_keys
     _bool_keys = [
         "OverwriteAlways"
         ]
+    _defaults = {
+        "IdentifierFormat": "{{%s}}",
+        "OverwriteAlways": "no"
+        }
 
     @DictProperty
     def vals(self, key) -> Any:
@@ -123,6 +134,8 @@ class ProgramConfigFile(ConfigFile):
         """
         if key in self.raw_vals:
             value = self.raw_vals[key]
+        elif key in self._defaults:
+            value = self._defaults[key]
         else:
             value = None
 
@@ -134,6 +147,11 @@ class ProgramConfigFile(ConfigFile):
                     value = False
 
         return value
+
+    @vals.setter
+    def vals(self, key: str, value: str) -> None:
+        """Set individual config values."""
+        self.raw_vals[key] = value
 
     def _check_value(self, key: str, value: str) -> Optional[str]:
         # Check boolean values.
@@ -150,10 +168,20 @@ class ProgramConfigFile(ConfigFile):
                 return "must not contain more than one instance of '%s'"
 
     def check_all(self, check_empty=True, context="config file") -> None:
+        """Check that file is valid and syntactically correct.
+
+        Args:
+            check_empty: Check empty/unset values.
+            context: The context to show in the error messages.
+
+        Raises:
+            FileParseError: There were missing, unrecognized or invalid options
+                in the config file.
+        """
         parse_errors = []
 
         # Check that all key names are valid.
-        missing_keys = set(self._all_keys) - self.raw_vals.keys()
+        missing_keys = set(self._req_keys) - self.raw_vals.keys()
         unrecognized_keys = self.raw_vals.keys() - set(self._all_keys)
         for key in missing_keys:
             parse_errors.append(
