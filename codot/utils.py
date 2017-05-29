@@ -21,7 +21,7 @@ import os
 from typing import Collection
 
 
-def rshave(string: str, substring: str) -> str:
+def rclip(string: str, substring: str) -> str:
     """Remove the first occurrence of a substring starting from the right.
 
     Args:

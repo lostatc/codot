@@ -22,7 +22,7 @@ from typing import Optional
 
 from codot import CONFIG_DIR, CONFIG_EXT, InputError
 from codot.basecommand import Command
-from codot.utils import print_table, rshave
+from codot.utils import print_table, rclip
 
 
 class RoleCommand(Command):
@@ -39,7 +39,7 @@ class RoleCommand(Command):
         self.role_name = role_name
         self.role_path = os.path.join(
             CONFIG_DIR, role_name) if role_name else None
-        self.config_name = rshave(
+        self.config_name = rclip(
             config_name, CONFIG_EXT) + CONFIG_EXT if config_name else None
 
     def main(self) -> None:
@@ -53,7 +53,7 @@ class RoleCommand(Command):
                     continue
                 role_name = entry.name
                 try:
-                    selected_config = os.path.basename(rshave(
+                    selected_config = os.path.basename(rclip(
                         os.readlink(entry.path + CONFIG_EXT), CONFIG_EXT))
                 except FileNotFoundError:
                     selected_config = ""
@@ -82,10 +82,14 @@ class RoleCommand(Command):
                 except FileNotFoundError:
                     selected_name = None
                 if selected_name == config_name:
-                    print("> ", end="")
+                    print_output = (
+                        "* "
+                        + chr(27) + "[32m"
+                        + rclip(config_name, CONFIG_EXT)
+                        + chr(27) + "[0m")
                 else:
-                    print("  ", end="")
-                print(rshave(config_name, CONFIG_EXT))
+                    print_output = "  " + rclip(config_name, CONFIG_EXT)
+                print(print_output)
             return
 
         # Switch selected config file.
@@ -100,4 +104,4 @@ class RoleCommand(Command):
             os.path.join(self.role_path, self.config_name),
             self.role_path + CONFIG_EXT)
         print("Switched '{0}' to '{1}'".format(
-            self.role_name, rshave(self.config_name, CONFIG_EXT)))
+            self.role_name, rclip(self.config_name, CONFIG_EXT)))
