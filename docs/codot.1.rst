@@ -109,35 +109,44 @@ COMMANDS
 
 EXAMPLES
 ========
-This is an example of a source file. ::
+This is an example of a source file.
+
+.. code-block:: none
+    :linenos:
 
     bar {
-            status_command i3blocks
+            status_command i3status
             position top
             font pango:DejaVuSans 12
 
             colors {
-                statusline	#e0e0e0
-                separator	#838383
-                background	#212121
+                statusline  #e0e0e0
+                separator   #838383
+                background  #212121
             }
     }
 
-This is an example of a template file. ::
+This is an example of a template file using the default identifier format.
+
+.. code-block:: none
+    :linenos:
 
     bar {
-            status_command i3blocks
+            status_command i3status
             position top
-            font pango:{{Typeface}} {{FontSize}}
+            font pango:{{Font}} {{FontSize}}
 
             colors {
-                statusline	{{ForegroundColor}}
-                separator	{{AccentColor}}
-                background	{{BackgroundColor}}
+                statusline  {{ForegroundColor}}
+                separator   {{AccentColor}}
+                background  {{BackgroundColor}}
             }
     }
 
-This is an example of a config file. ::
+This is an example of a config file.
+
+.. code-block:: cfg
+    :linenos:
 
     # These are colors for the cross-application color scheme.
     ForegroundColor=#e0e0e0
@@ -145,27 +154,31 @@ This is an example of a config file. ::
     BackgroundColor=#212121
 
     # These are cross-appliation font settings.
-    Typeface=DejaVuSans
+    Font=DejaVuSans
     FontSize=12
 
 This is an example of what the file structure under the **codot** program
 directory could look like. ::
 
-    templates/
-        .vimrc
-        .config/
-            i3/
-                config
-    config/
-        desktop.conf
-        color_scheme/
-            solarized.conf
-            dracula.conf
-        color_scheme.conf -> color_scheme/solarized.conf
-    priority
-    settings.conf
+    ~/.config/codot/
+    ├── config/
+    │   ├── color_scheme/
+    │   │   ├── solarized.conf
+    │   │   └── zenburn.conf
+    │   ├── color_scheme.conf -> color_scheme/solarized.conf
+    │   └── desktop.conf
+    ├── templates/
+    │   ├── .config/
+    │   │   └── i3/
+    │   │       └── config
+    │   └── .vimrc
+    ├── priority
+    └── settings.conf
 
-This is an example of what the the 'priority' file could look like. ::
+This is an example of what the the 'priority' file could look like.
+
+.. code-block:: none
+    :linenos:
 
     desktop
     color_scheme
