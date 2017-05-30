@@ -4,7 +4,7 @@ This repository is still under construction.
 codot is a program for consolidating your dotfiles so that settings for
 multiple applications can be modified from one set of files.
 
-####Consolidated
+#### Consolidated
 The Unix philosophy that every program should have a single responsibility can
 be problematic when each program needs to be configured separately. Instead of
 tracking down the individual config files for your window manager, terminal
@@ -12,13 +12,13 @@ emulator and status bar, codot allows you to edit all of your settings in one
 place with the same text-based format you're familiar with. You can choose what
 config options are called and separate them by function instead of by program.
 
-####Centralized
+#### Centralized
 codot makes theming easy by allowing you to set up your color scheme and font
 config once instead of on a per-program basis. When you want to make changes,
 those changes propogate to each of your programs. With *roles*, you can
 pre-define separate sets of config values and switch between them easily.
 
-####Interoperable
+#### Interoperable
 codot works with any program that uses plain text files for configuration, and
 allows you to edit your consolidated config options using that same interface.
 Because it's based on plain text, it works with all sorts of dotfile managers.
