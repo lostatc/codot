@@ -4,24 +4,27 @@ This repository is still under construction.
 codot is a program for consolidating your dotfiles so that settings for
 multiple applications can be modified from one set of files.
 
-#### Consolidated
-The Unix philosophy that every program should have a single responsibility can
-be problematic when each program needs to be configured separately. Instead of
-tracking down the individual config files for your window manager, terminal
-emulator and status bar, codot allows you to edit all of your settings in one
-place with the same text-based format you're familiar with. You can choose what
-config options are called and separate them by function instead of by program.
+The Unix philosophy that every program should have a single responsibility
+often means that users are left with their personal configurations and
+customizations spread across multiple files that need to be tracked down and
+modified separately. These config files often use different formats and
+inconsistent setting names.
 
-#### Centralized
-codot makes theming easy by allowing you to set up your color scheme and font
-config once instead of on a per-program basis. When you want to make changes,
-those changes propogate to each of your programs. With *roles*, you can
-pre-define separate sets of config values and switch between them easily.
+This program is meant to provide a simple text-based interface for
+consolidating settings from multiple different programs into one or more files
+for easy modification by the user. It allows you to edit your settings in one
+place with one simple format and custom setting names. You decide how your
+config files are organized, and can group settings by function instead of by
+program.
 
-#### Interoperable
-codot works with any program that uses plain text files for configuration, and
-allows you to edit your consolidated config options using that same interface.
-Because it's based on plain text, it works with all sorts of dotfile managers.
+Cross-application customizations like color schemes and keybindings can be set
+once instead of having to be set for each program separately. With *roles*, you
+can easily swap out different color schemes or any other set of settings that
+you define.
+
+codot works with any program that uses plain text files for configuration, no
+matter the format. It is designed to work with most dotfile managers. See the
+full documentation below for more details.
 
 [Documentation](https://codot.readthedocs.io/en/latest/index.html)
 
