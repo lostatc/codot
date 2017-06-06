@@ -73,7 +73,7 @@ Daemon
 ------
 The daemon monitors the filesystem for changes and automatically runs the
 **sync** command whenever a config file, a template file or the 'priority' file
-is modofied.
+is modified.
 
 GLOBAL OPTIONS
 ==============
