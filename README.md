@@ -14,15 +14,15 @@ This program is meant to provide a simple text-based interface for
 consolidating settings from multiple different programs into one or more files
 for easy modification by the user. It allows you to edit your settings in one
 place with one simple format and custom setting names. You decide how your
-config files are organized, and can group settings by function instead of by
+config files are organized and can group settings by function instead of by
 program.
 
 Cross-application customizations like color schemes and keybindings can be set
 once instead of having to be set for each program separately. With *roles*, you
-can easily swap out different color schemes or any other set of settings that
+can easily swap out different color schemes or any other group of settings that
 you define.
 
-codot works with any program that uses plain text files for configuration, no
+codot works with any program that uses plain-text files for configuration, no
 matter the format. It is designed to work with most dotfile managers. See the
 full documentation below for more details.
 

@@ -115,15 +115,15 @@ This is an example of a source file.
     :linenos:
 
     bar {
-            status_command i3status
-            position top
-            font pango:DejaVuSans 12
+        status_command i3status
+        position top
+        font pango:DejaVuSans 12
 
-            colors {
-                statusline  #e0e0e0
-                separator   #838383
-                background  #212121
-            }
+        colors {
+            statusline  #e0e0e0
+            separator   #838383
+            background  #212121
+        }
     }
 
 This is an example of a template file using the default identifier format.
@@ -132,15 +132,15 @@ This is an example of a template file using the default identifier format.
     :linenos:
 
     bar {
-            status_command i3status
-            position top
-            font pango:{{Font}} {{FontSize}}
+        status_command i3status
+        position top
+        font pango:{{Font}} {{FontSize}}
 
-            colors {
-                statusline  {{ForegroundColor}}
-                separator   {{AccentColor}}
-                background  {{BackgroundColor}}
-            }
+        colors {
+            statusline  {{ForegroundColor}}
+            separator   {{AccentColor}}
+            background  {{BackgroundColor}}
+        }
     }
 
 This is an example of a config file.
