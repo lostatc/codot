@@ -24,7 +24,7 @@ import argparse
 import pkg_resources
 import textwrap
 
-from codot import InputError, ProgramError
+from codot.exceptions import InputError, ProgramError
 from codot.basecommand import Command
 from codot.daemon import Daemon
 from codot.commands.role import RoleCommand
@@ -44,10 +44,12 @@ def usage(command: str) -> None:
         # Don't use colors if stdout isn't a tty.
         format_chars = ["", "", ""]
 
-    # Repeat the command descriptions in the code so that one can be made
-    # more detailed in the future. textwrap.wrap() can't be used here in leu
-    # of manual formatting because it doesn't account for the terminal
-    # control codes.
+    # textwrap.wrap() can't be used here in leu of manual formatting because
+    # it doesn't account for the terminal control codes. The text wrap
+    # feature of your editor probably won't work either for the same reason.
+    # When editing these messages, make sure to manually wrap the text to
+    # 79 columns, not counting the in-code indentation or the replacement
+    # fields (e.g. {1}).
     if not command:
         help_msg = textwrap.dedent("""\
             Usage: {1}codot{0} [{2}global_options{0}] {2}command{0} [{2}command_options{0}] [{2}command_args{0}]
@@ -65,12 +67,12 @@ def usage(command: str) -> None:
                     which there is a template file, but only if those source files have not
                     been modified since the last sync.
 
-                {1}role{0} [{2}role_name{0}] [{2}config_name{0}]
-                    Switch the currently selected config file in the role named {2}role_name{0}
-                    to {2}config_name{0}. If {2}config_name{0} is not specified, print a list of config
-                    files available for that role and show which one is currently selected. If
+                {1}role{0} [{2}role_name{0} [{2}config_name{0}]]
+                    Make {2}config_name{0} the currently selected config file in the role named
+                    {2}role_name{0}. If {2}config_name{0} is not specified, print a list of config files
+                    available for that role and show which one is currently selected. If
                     {2}role_name{0} is not specified, print a table of all roles and their
-                    selected config files.
+                    selected config files. 
 
             """)
     elif command == "sync":
@@ -86,12 +88,12 @@ def usage(command: str) -> None:
             """)
     elif command == "role":
         help_msg = textwrap.dedent("""\
-            {1}role{0} [{2}role_name{0}] [{2}config_name{0}]
-                Switch the currently selected config file in the role named {2}role_name{0}
-                to {2}config_name{0}. If {2}config_name{0} is not specified, print a list of config
-                files available for that role and show which one is currently selected. If
-                {2}role_name{0} is not specified, print a table of all roles and their
-                selected config files.
+            {1}role{0} [{2}role_name{0} [{2}config_name{0}]]
+                Make {2}config_name{0} the currently selected config file in the role named
+                {2}role_name{0}. If {2}config_name{0} is not specified, print a list of config files
+                available for that role and show which one is currently selected. If
+                {2}role_name{0} is not specified, print a table of all roles and their selected
+                config files. 
             """)
     else:
         help_msg = ""
