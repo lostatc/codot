@@ -23,7 +23,7 @@ import datetime
 import time
 from typing import Any, Optional
 
-from codot import FileParseError
+from codot.exceptions import FileParseError
 from codot.utils import DictProperty
 
 

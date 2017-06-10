@@ -26,7 +26,8 @@ from typing import Optional
 
 from codot import (
     PROGRAM_DIR, TEMPLATES_DIR, CONFIG_DIR, PRIORITY_FILE, SETTINGS_FILE,
-    CONFIG_EXT, StatusError)
+    CONFIG_EXT)
+from codot.exceptions import StatusError
 
 
 class Command(abc.ABC):

@@ -1,9 +1,6 @@
 """Consolidate your dotfiles."""
 import os
 
-from codot.exceptions import (
-    ProgramError, InputError, StatusError, FileParseError)
-
 HOME_DIR = os.path.expanduser("~/")
 XDG_CONFIG_HOME = os.getenv("XDG_CONFIG_HOME", os.path.expanduser("~/.config"))
 
