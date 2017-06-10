@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with codot.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
+import sys
 import time
 import tempfile
 import shutil
@@ -65,7 +66,7 @@ class SyncCommand(Command):
         # source file.
         template_pairs = []
         for entry in rec_scan(TEMPLATES_DIR):
-            if not entry.is_file(follow_symlinks=False):
+            if not entry.is_file():
                 continue
 
             template_path = entry.path
@@ -73,9 +74,10 @@ class SyncCommand(Command):
                 HOME_DIR, os.path.relpath(entry.path, TEMPLATES_DIR))
             try:
                 if os.path.isdir(source_path):
-                    raise StatusError(
-                        "source file exists and is a directory: "
-                        + source_path)
+                    print(
+                        "Error: skipping source file that exists but is a "
+                        "directory: {}".format(source_path), file=sys.stderr)
+                    continue
                 source_mtime = os.stat(source_path).st_mtime
             except FileNotFoundError:
                 # Template files without a corresponding source file are
