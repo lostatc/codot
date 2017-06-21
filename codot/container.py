@@ -23,8 +23,67 @@ import datetime
 import time
 from typing import Any, Optional
 
+from codot import SETTINGS_FILE, INFO_FILE
 from codot.exceptions import FileParseError
 from codot.utils import DictProperty
+
+
+class ProgramData:
+    """Access persistently stored data."""
+    def __init__(self) -> None:
+        self._cfg_file = ProgramConfigFile(SETTINGS_FILE)
+        self._info_file = ProgramInfoFile(INFO_FILE)
+
+    def read(self) -> None:
+        self._cfg_file.read()
+        self._cfg_file.check_all()
+        self._info_file.read()
+
+    def generate(self) -> None:
+        """Generate files storing persistent data."""
+        self.last_sync = time.time()
+        self.write()
+
+    def write(self) -> None:
+        self._info_file.write()
+
+    @property
+    def overwrite_always(self) -> bool:
+        """Always overwrite source files."""
+        raw_value = self._cfg_file.vals["OverwriteAlways"]
+        if raw_value in self._cfg_file.true_vals:
+            return True
+        elif raw_value in self._cfg_file.false_vals:
+            return False
+
+    @overwrite_always.setter
+    def overwrite_always(self, value) -> None:
+        self._cfg_file.vals["OverwriteAlways"] = value
+
+    @property
+    def id_format(self) -> str:
+        """The format for identifiers in the template files."""
+        return self._cfg_file.vals["IdentifierFormat"]
+
+    @id_format.setter
+    def id_format(self, value) -> None:
+        self._cfg_file.vals["IdentifierFormat"] = value
+
+    @property
+    def last_sync(self) -> float:
+        """The time of the last sync in seconds since the epoch."""
+        raw_value = self._info_file.vals["LastSync"]
+        return datetime.datetime.strptime(
+            raw_value, "%Y-%m-%dT%H:%M:%S.%f").replace(
+            tzinfo=datetime.timezone.utc).timestamp()
+
+    @last_sync.setter
+    def last_sync(self, value: float) -> None:
+        # Use strftime() instead of isoformat() because the latter
+        # doesn't print the decimal point if the microsecond is 0,
+        # which would prevent it from being parsed by strptime().
+        self._info_file.vals["LastSync"] = datetime.datetime.utcfromtimestamp(
+            value).strftime("%Y-%m-%dT%H:%M:%S.%f")
 
 
 class ConfigFile:
@@ -48,7 +107,7 @@ class ConfigFile:
 
     @DictProperty
     def vals(self, key) -> str:
-        """Parse individual config values."""
+        """Return individual config values."""
         return self.raw_vals[key]
 
     @vals.setter
@@ -73,31 +132,34 @@ class ConfigFile:
 class JSONFile:
     """Parse a JSON-formatted file.
 
+    Args:
+        path: The path of the JSON file.
+
     Attributes:
         path: The path of the JSON file.
-        raw_vals: A dictionary or list of values from the file.
+        vals: A dictionary or list of values from the file.
     """
     def __init__(self, path) -> None:
         self.path = path
-        self.raw_vals = None
+        self.vals = None
 
     def read(self) -> None:
-        """Read file into an object."""
+        """Read all files storing persistent data."""
         with open(self.path) as file:
-            self.raw_vals = json.load(file)
+            self.vals = json.load(file)
 
     def write(self) -> None:
         """Write object to a file."""
         with open(self.path, "w") as file:
-            json.dump(self.raw_vals, file, indent=4)
+            json.dump(self.vals, file, indent=4)
 
 
 class ProgramConfigFile(ConfigFile):
     """Parse a program config file.
 
     Attributes:
-        _true_vals: A list of strings that are recognized as boolean true.
-        _false_vals: A list of strings that are recognized as boolean false.
+        true_vals: A list of strings that are recognized as boolean true.
+        false_vals: A list of strings that are recognized as boolean false.
         _req_keys: A list of config keys that must be included in the config
             file.
         _opt_keys: A list of config keys that may be commented out or omitted.
@@ -107,10 +169,11 @@ class ProgramConfigFile(ConfigFile):
             keys.
         path: The path of the configuration file.
         raw_vals: A dict of unmodified config value strings.
-        vals: A dict property of parsed config values.
+        vals: A dict property that returns values from raw_vals but defaults to
+            value from _defaults.
     """
-    _true_vals = ["yes", "true"]
-    _false_vals = ["no", "false"]
+    true_vals = ["yes", "true"]
+    false_vals = ["no", "false"]
     _req_keys = []
     _opt_keys = [
         "IdentifierFormat", "OverwriteAlways"
@@ -126,27 +189,11 @@ class ProgramConfigFile(ConfigFile):
 
     @DictProperty
     def vals(self, key) -> Any:
-        """Parse individual config values.
-
-        Returns:
-            IdentifierFormat: Input value unmodified as a str.
-            OverwriteAlways: Input value converted to a bool.
-        """
+        """Get defaults of corresponding raw values are unset."""
         if key in self.raw_vals:
-            value = self.raw_vals[key]
+            return self.raw_vals[key]
         elif key in self._defaults:
-            value = self._defaults[key]
-        else:
-            value = None
-
-        if key in self._bool_keys:
-            if isinstance(value, str):
-                if value.lower() in self._true_vals:
-                    value = True
-                elif value.lower() in self._false_vals:
-                    value = False
-
-        return value
+            return self._defaults[key]
 
     @vals.setter
     def vals(self, key: str, value: str) -> None:
@@ -156,7 +203,7 @@ class ProgramConfigFile(ConfigFile):
     def _check_value(self, key: str, value: str) -> Optional[str]:
         # Check boolean values.
         if (key in self._bool_keys
-                and value.lower() not in (self._true_vals + self._false_vals)):
+                and value.lower() not in (self.true_vals + self.false_vals)):
             return "must have a boolean value"
 
         if key == "IdentifierFormat":
@@ -205,58 +252,12 @@ class ProgramConfigFile(ConfigFile):
 class ProgramInfoFile(JSONFile):
     """Parse a json-formatted file for string program metadata.
 
+    Args:
+        path: The path of the JSON file.
+
     Attributes:
-        raw_vals: A dictionary of raw string values from the file.
-        vals: A dict property of parsed values from the file.
+        vals: A dict of values from the file.
     """
-    def __init__(self, path) -> None:
+    def __init__(self, path: str) -> None:
         super().__init__(path)
-        self.raw_vals = {}
-
-    @DictProperty
-    def vals(self, key) -> Any:
-        """Parse individual values from the info file.
-
-        Returns:
-            LastSync: Input value converted to the number of seconds since the
-                epoch.
-        """
-        if key in self.raw_vals:
-            value = self.raw_vals[key]
-        else:
-            value = None
-
-        if value is not None:
-            if key == "LastSync":
-                value = datetime.datetime.strptime(
-                    value, "%Y-%m-%dT%H:%M:%S.%f").replace(
-                        tzinfo=datetime.timezone.utc).timestamp()
-
-        return value
-
-    @vals.setter
-    def vals(self, key, value) -> None:
-        """Set individual values."""
-        if value is not None:
-            if key == "LastSync":
-                # Use strftime() instead of isoformat() because the latter
-                # doesn't print the decimal point if the microsecond is 0,
-                # which would prevent it from being parsed by strptime().
-                value = datetime.datetime.utcfromtimestamp(
-                    value).strftime("%Y-%m-%dT%H:%M:%S.%f")
-        self.raw_vals[key] = value
-
-    def generate(self) -> None:
-        """Generate info for a new profile.
-
-        JSON Values:
-            LastSync: The date and time (UTC) of the last sync on the profile.
-
-        Args:
-            name: The name of the profile to use for the unique ID.
-        """
-        self.raw_vals.update({
-            "LastSync": None,
-            })
-        self.vals["LastSync"] = time.time()
-        self.write()
+        self.vals = {}

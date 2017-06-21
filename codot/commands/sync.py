@@ -31,7 +31,7 @@ from codot import (
     PRIORITY_FILE, CONFIG_EXT)
 from codot.exceptions import InputError, StatusError
 from codot.utils import rec_scan, rclip
-from codot.container import ConfigFile, ProgramInfoFile, ProgramConfigFile
+from codot.container import ConfigFile, ProgramData
 from codot.basecommand import Command
 
 
@@ -45,20 +45,17 @@ class SyncCommand(Command):
     def __init__(self, overwrite=False) -> None:
         super().__init__()
         self.overwrite = overwrite
-        self.info_file = ProgramInfoFile(INFO_FILE)
-        self.cfg_file = ProgramConfigFile(SETTINGS_FILE)
+        self.data = ProgramData()
 
     def main(self) -> None:
         super().main()
         self.lock()
-        self.cfg_file.read()
-        self.cfg_file.check_all()
         try:
-            self.info_file.read()
+            self.data.read()
         except FileNotFoundError:
-            self.info_file.generate()
+            self.data.generate()
 
-        if self.overwrite or self.cfg_file.vals["OverwriteAlways"]:
+        if self.overwrite or self.data.overwrite_always:
             overwrite_source = True
         else:
             overwrite_source = False
@@ -85,8 +82,7 @@ class SyncCommand(Command):
                 # skipped.
                 continue
 
-            if (source_mtime <= self.info_file.vals["LastSync"]
-                    or overwrite_source):
+            if source_mtime <= self.data.last_sync or overwrite_source:
                 template_pairs.append((template_path, source_path))
 
         # Get a priority-ordered list of enabled configs and roles.
@@ -106,7 +102,7 @@ class SyncCommand(Command):
             config_values.update(config_file.raw_vals)
 
         identifier_regex = re.compile(
-            re.escape(self.cfg_file.vals["IdentifierFormat"]).replace(
+            re.escape(self.data.id_format).replace(
                 r"\%s", r"([\w-]+)"))
 
         # Replace identifiers in template files with values from config files.
@@ -134,7 +130,7 @@ class SyncCommand(Command):
                                 + "is not in any enabled config file")
                             continue
                         new_line = new_line.replace(
-                            self.cfg_file.vals["IdentifierFormat"].replace(
+                            self.data.id_format.replace(
                                 "%s", identifier_name),
                             config_values[identifier_name])
                     tmp_file.write(new_line)
@@ -156,5 +152,5 @@ class SyncCommand(Command):
 
         # The sync is now complete. Update the time of the last sync in the
         # info file.
-        self.info_file.vals["LastSync"] = time.time()
-        self.info_file.write()
+        self.data.last_sync = time.time()
+        self.data.write()
