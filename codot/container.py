@@ -35,6 +35,7 @@ class ProgramData:
         self._info_file = ProgramInfoFile(INFO_FILE)
 
     def read(self) -> None:
+        """Load data from persistent storage."""
         self._cfg_file.read()
         self._cfg_file.check_all()
         self._info_file.read()
@@ -45,6 +46,7 @@ class ProgramData:
         self.write()
 
     def write(self) -> None:
+        """Write data to persistent storage."""
         self._info_file.write()
 
     @property
@@ -56,18 +58,10 @@ class ProgramData:
         elif raw_value in self._cfg_file.false_vals:
             return False
 
-    @overwrite_always.setter
-    def overwrite_always(self, value) -> None:
-        self._cfg_file.vals["OverwriteAlways"] = value
-
     @property
     def id_format(self) -> str:
         """The format for identifiers in the template files."""
         return self._cfg_file.vals["IdentifierFormat"]
-
-    @id_format.setter
-    def id_format(self, value) -> None:
-        self._cfg_file.vals["IdentifierFormat"] = value
 
     @property
     def last_sync(self) -> float:
@@ -157,6 +151,13 @@ class JSONFile:
 class ProgramConfigFile(ConfigFile):
     """Parse a program config file.
 
+    The default values for some options are stored in the code. This allows
+    the user to comment those values out to return them to their default
+    values, and it also allows for new values to be added in the future
+    without requiring users to update their config files. These values are
+    not commented out by default, however, so that the defaults can be
+    changed in the future without affecting existing users.
+
     Attributes:
         true_vals: A list of strings that are recognized as boolean true.
         false_vals: A list of strings that are recognized as boolean false.
@@ -189,7 +190,7 @@ class ProgramConfigFile(ConfigFile):
 
     @DictProperty
     def vals(self, key) -> Any:
-        """Get defaults of corresponding raw values are unset."""
+        """Get defaults if corresponding raw values are unset."""
         if key in self.raw_vals:
             return self.raw_vals[key]
         elif key in self._defaults:
