@@ -69,7 +69,7 @@ class TestSyncCommand:
     @pytest.mark.parametrize("id_format", ["{{%s}}", "__%s__", "${%s}"])
     def test_propagate_config_changes(
             self, fake_files, monkeypatch, id_format):
-        """Values propagated with different identifier formats."""
+        """Values can be propagated with different identifier formats."""
         identifiers = ["Font", "FontSize", "ForegroundColor", "BackgroundColor"]
         template_contents = "\n".join(
             id_format.replace("%s", identifier) for identifier in identifiers)
@@ -79,7 +79,7 @@ class TestSyncCommand:
 
         cmd = SyncCommand()
         monkeypatch.setattr(cmd.data, "read", cmd.data.generate)
-        monkeypatch.setattr(cmd.data, "id_format", id_format)
+        monkeypatch.setattr(cmd.data.__class__, "id_format", id_format)
         cmd.main()
 
         expected_content = textwrap.dedent("""\
