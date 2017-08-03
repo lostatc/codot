@@ -23,7 +23,7 @@ from typing import Optional
 from codot import CONFIG_DIR, CONFIG_EXT
 from codot.exceptions import InputError
 from codot.commandbase import Command
-from codot.utils import print_table, rclip
+from codot.utils import print_table, rm_ext, add_ext
 
 
 class RoleCommand(Command):
@@ -40,8 +40,8 @@ class RoleCommand(Command):
         self.role_name = role_name
         self.role_path = os.path.join(
             CONFIG_DIR, role_name) if role_name else None
-        self.config_name = rclip(
-            config_name, CONFIG_EXT) + CONFIG_EXT if config_name else None
+        self.config_name = add_ext(
+            config_name, CONFIG_EXT) if config_name else None
 
     def main(self) -> None:
         self.lock()
@@ -53,8 +53,9 @@ class RoleCommand(Command):
                     continue
                 role_name = entry.name
                 try:
-                    selected_config = os.path.basename(rclip(
-                        os.readlink(entry.path + CONFIG_EXT), CONFIG_EXT))
+                    selected_config = os.path.basename(rm_ext(
+                        os.readlink(add_ext(entry.path, CONFIG_EXT)),
+                        CONFIG_EXT))
                 except FileNotFoundError:
                     selected_config = ""
                 role_names.append((role_name, selected_config))
@@ -85,10 +86,10 @@ class RoleCommand(Command):
                     print_output = (
                         "* "
                         + "\33[32m"  # ANSI green text
-                        + rclip(config_name, CONFIG_EXT)
+                        + rm_ext(config_name, CONFIG_EXT)
                         + "\33[0m")  # ANSI normal text
                 else:
-                    print_output = "  " + rclip(config_name, CONFIG_EXT)
+                    print_output = "  " + rm_ext(config_name, CONFIG_EXT)
                 print(print_output)
             return
 
@@ -104,4 +105,4 @@ class RoleCommand(Command):
             os.path.join(self.role_path, self.config_name),
             self.role_path + CONFIG_EXT)
         print("Switched '{0}' to '{1}'".format(
-            self.role_name, rclip(self.config_name, CONFIG_EXT)))
+            self.role_name, rm_ext(self.config_name, CONFIG_EXT)))

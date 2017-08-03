@@ -30,7 +30,7 @@ from codot import (
     HOME_DIR, TEMPLATES_DIR, CONFIG_DIR, INFO_FILE, SETTINGS_FILE,
     PRIORITY_FILE, CONFIG_EXT)
 from codot.exceptions import InputError, StatusError
-from codot.utils import rec_scan, rclip
+from codot.utils import rec_scan, rm_ext, add_ext
 from codot.container import ConfigFile, ProgramData
 from codot.commandbase import Command
 
@@ -87,7 +87,7 @@ class SyncCommand(Command):
         # Get a priority-ordered list of enabled configs and roles.
         with open(PRIORITY_FILE, "r") as file:
             config_priority = [
-                rclip(line.strip(), CONFIG_EXT) + CONFIG_EXT
+                add_ext(line.strip(), CONFIG_EXT)
                 for line in file if line.strip()]
 
         # Get a dict of values from all config files. Reverse the order of

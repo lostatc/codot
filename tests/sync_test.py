@@ -26,7 +26,7 @@ from tests.base import fake_files, copy_config
 from codot import HOME_DIR, INFO_FILE, PRIORITY_FILE, CONFIG_EXT
 from codot.exceptions import InputError
 from codot.commands.sync import SyncCommand
-from codot.utils import rclip
+from codot.utils import rm_ext
 from codot.container import ProgramData
 
 

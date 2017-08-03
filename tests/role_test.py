@@ -25,7 +25,7 @@ from tests.base import fake_files, copy_config
 import codot
 from codot import CONFIG_DIR, CONFIG_EXT
 from codot.exceptions import InputError
-from codot.utils import rclip
+from codot.utils import rm_ext
 from codot.commands.role import RoleCommand
 
 

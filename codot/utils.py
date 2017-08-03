@@ -21,11 +21,11 @@ import os
 from typing import Collection
 
 
-def rclip(string: str, substring: str) -> str:
+def rm_ext(orig_string: str, substring: str) -> str:
     """Remove the first occurrence of a substring starting from the right.
 
     Args:
-        string: The string to remove the substring from.
+        orig_string: The string to remove the substring from.
         substring: The substring to remove from the string. If this is an empty
             string or None, then nothing is removed.
 
@@ -33,9 +33,26 @@ def rclip(string: str, substring: str) -> str:
         The original string with the substring removed.
     """
     if substring:
-        return "".join(string.rsplit(substring, 1))
+        return "".join(orig_string.rsplit(substring, 1))
     else:
-        return string
+        return orig_string
+
+
+def add_ext(orig_string: str, substring: str) -> str:
+    """Append a substring to the end if it's not already there.
+
+    Args:
+        orig_string: The string to add the substring to.
+        substring: The substring to add to the string. If this already exists,
+            nothing is added.
+
+    Returns:
+        The original string with the substring added.
+    """
+    if substring:
+        return rm_ext(orig_string, substring) + substring
+    else:
+        return orig_string
 
 
 def rec_scan(path: str):
