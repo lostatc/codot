@@ -42,6 +42,12 @@ sudo make install
 ```
 
 #### Post-install
+Run the following command to generate all the necessary program files in the
+current user's home directory.
+```
+codot init
+```
+
 The program comes with a daemon that monitors the filesystem and automatically
 propogates changes to config files. To start it and set it to auto-start on
 login, run the following commands.

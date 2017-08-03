@@ -22,11 +22,11 @@ import signal
 import sys
 import argparse
 import pkg_resources
-import textwrap
 
 from codot.exceptions import InputError, ProgramError
-from codot.basecommand import Command
+from codot.commandbase import Command
 from codot.daemon import Daemon
+from codot.commands.init import InitCommand
 from codot.commands.role import RoleCommand
 from codot.commands.sync import SyncCommand
 
@@ -155,6 +155,9 @@ def parse_args() -> argparse.Namespace:
     subparsers = parser.add_subparsers(dest="command")
     subparsers.required = True
 
+    parser_init = subparsers.add_parser("init", add_help=False)
+    parser_init.add_argument("--help", action=HelpAction)
+
     parser_sync = subparsers.add_parser("sync", add_help=False)
     parser_sync.add_argument("--help", action=HelpAction)
     parser_sync.add_argument("--overwrite", "-o", action="store_true")
@@ -212,7 +215,9 @@ def daemon() -> int:
 
 
 def def_command(cmd_args) -> Command:
-    if cmd_args.command == "sync":
+    if cmd_args.command == "init":
+        return InitCommand()
+    elif cmd_args.command == "sync":
         return SyncCommand(cmd_args.overwrite)
     elif cmd_args.command == "role":
         return RoleCommand(cmd_args.role_name, cmd_args.config_name)

@@ -22,7 +22,7 @@ from typing import Optional
 
 from codot import CONFIG_DIR, CONFIG_EXT
 from codot.exceptions import InputError
-from codot.basecommand import Command
+from codot.commandbase import Command
 from codot.utils import print_table, rclip
 
 
@@ -44,7 +44,6 @@ class RoleCommand(Command):
             config_name, CONFIG_EXT) + CONFIG_EXT if config_name else None
 
     def main(self) -> None:
-        super().main()
         self.lock()
 
         if not self.role_name:

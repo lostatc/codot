@@ -32,7 +32,7 @@ from codot import (
 from codot.exceptions import InputError, StatusError
 from codot.utils import rec_scan, rclip
 from codot.container import ConfigFile, ProgramData
-from codot.basecommand import Command
+from codot.commandbase import Command
 
 
 class SyncCommand(Command):
@@ -48,7 +48,6 @@ class SyncCommand(Command):
         self.data = ProgramData()
 
     def main(self) -> None:
-        super().main()
         self.lock()
         try:
             self.data.read()

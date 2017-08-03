@@ -37,24 +37,7 @@ class Command(abc.ABC):
 
     @abc.abstractmethod
     def main(self) -> None:
-        """Run the command.
-
-        This also creates the program directory and all files under it if it
-        doesn't already exist.
-        """
-        if not os.path.isdir(PROGRAM_DIR):
-            os.makedirs(PROGRAM_DIR)
-        if not os.path.isdir(TEMPLATES_DIR):
-            os.mkdir(TEMPLATES_DIR)
-        if not os.path.isdir(CONFIG_DIR):
-            os.mkdir(CONFIG_DIR)
-        if not os.path.isfile(PRIORITY_FILE):
-            open(PRIORITY_FILE, "a").close()
-        if not os.path.isfile(SETTINGS_FILE):
-            # TODO: Get this path from setup.py instead of hardcoding it.
-            shutil.copy(
-                os.path.join(sys.prefix, "share/codot/settings.conf"),
-                SETTINGS_FILE)
+        """Run the command."""
 
     def lock(self) -> None:
         """Lock the program if not already locked.
