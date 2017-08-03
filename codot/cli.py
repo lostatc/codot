@@ -23,6 +23,8 @@ import sys
 import argparse
 import pkg_resources
 
+from linotype import DefinitionStyle, Formatter, Item
+
 from codot.exceptions import InputError, ProgramError
 from codot.commandbase import Command
 from codot.daemon import Daemon
@@ -31,75 +33,83 @@ from codot.commands.role import RoleCommand
 from codot.commands.sync import SyncCommand
 
 
-def usage(command: str) -> None:
-    """Print a usage message."""
+def help_item() -> Item:
+    """Structure the help message.
 
-    if sys.stdout.isatty():
-        format_chars = [
-            chr(27) + "[0m",    # No formatting.
-            chr(27) + "[1m",    # Bold, used for commands/options.
-            chr(27) + "[4m"     # Underlined, used for arguments.
-            ]
+    Returns:
+        An Item object with the message.
+    """
+    formatter = Formatter()
+    root_item = Item(formatter)
+
+    usage = root_item.add_text("Usage:", item_id="usage")
+    usage.add_definition(
+        "codot", "[global_options] command [command_options] [command_args]",
+        "")
+    usage.add_text("\n")
+
+    global_opts = root_item.add_text("Global Options:", item_id="global_opts")
+    global_opts.formatter.definition_style = DefinitionStyle.ALIGNED
+    global_opts.add_definition(
+        "    --help", "",
+        "Print a usage message and exit.")
+    global_opts.add_definition(
+        "    --version", "",
+        "Print the version number and exit.")
+    global_opts.add_definition(
+        "    --debug", "",
+        "Print a full stack trace instead of an error message if an error "
+        "occurs.")
+    global_opts.add_definition(
+        "-q, --quiet", "",
+        "Suppress all non-error output.")
+    global_opts.add_text("\n")
+
+    commands = root_item.add_text("Commands:", item_id="commands")
+
+    init_cmd = commands.add_definition(
+        "init", "",
+        "Generate the program directory in the current user's home directory.",
+        item_id="init")
+    commands.add_text("\n")
+
+    sync_cmd = commands.add_definition(
+        "sync", "[options]",
+        "Propagate changes in all config files and roles to all source files "
+        "for which there is a template file, but only if those source files "
+        "have not been modified since the last sync.", item_id="sync")
+    commands.add_text("\n")
+    sync_cmd.add_text("\n")
+    sync_cmd.add_definition(
+        "-o, --overwrite", "",
+        "Overwrite the source files even if they've been modified since the "
+        "last sync.")
+
+    role_cmd = commands.add_definition(
+        "role", "[role_name [config_name]]",
+        "Make config_name the currently selected config file in the role "
+        "named role_name. If config_name is not specified, print a list of "
+        "config files available for that role and show which one is currently "
+        "selected. If role_name is not specified, print a table of all roles "
+        "and their selected config files.", item_id="role")
+
+    return root_item
+
+
+def help_message(command: str) -> str:
+    """Get the help message.
+    
+    Args:
+        command: The command to print the help message of. If 'None,' print the
+            general help message.
+        
+    Returns:
+        The help message as a string.
+    """
+    if command:
+        return help_item().format(item_id=command)
     else:
-        # Don't use colors if stdout isn't a tty.
-        format_chars = ["", "", ""]
-
-    # textwrap.wrap() can't be used here in leu of manual formatting because
-    # it doesn't account for the terminal control codes. The text wrap
-    # feature of your editor probably won't work either for the same reason.
-    # When editing these messages, make sure to manually wrap the text to
-    # 79 columns, not counting the in-code indentation or the replacement
-    # fields (e.g. {1}).
-    if not command:
-        help_msg = textwrap.dedent("""\
-            Usage: {1}codot{0} [{2}global_options{0}] {2}command{0} [{2}command_options{0}] [{2}command_args{0}]
-
-            Global options:
-                    {1}--help{0}          Print a usage message and exit.
-                    {1}--version{0}       Print the version number and exit.
-                    {1}--debug{0}         Print a full stack trace instead of an error message if an
-                                        error occurs.
-                {1}-q{0}, {1}--quiet{0}         Suppress all non-error output.
-
-            Commands:
-                {1}sync{0} [{2}options{0}]
-                    Propogate changes in all config files and roles to all source files for
-                    which there is a template file, but only if those source files have not
-                    been modified since the last sync.
-
-                {1}role{0} [{2}role_name{0} [{2}config_name{0}]]
-                    Make {2}config_name{0} the currently selected config file in the role named
-                    {2}role_name{0}. If {2}config_name{0} is not specified, print a list of config files
-                    available for that role and show which one is currently selected. If
-                    {2}role_name{0} is not specified, print a table of all roles and their
-                    selected config files. 
-
-            """)
-    elif command == "sync":
-        help_msg = textwrap.dedent("""\
-            {1}sync{0} [{2}options{0}]
-                Propogate changes in all config files and roles to all source files for
-                which there is a template file, but only if those source files have not
-                been modified since the last sync.
-
-                {1}-o{0}, {1}--overwrite{0}
-                    Overwrite the source files even if they've been modified since the last
-                    sync.
-            """)
-    elif command == "role":
-        help_msg = textwrap.dedent("""\
-            {1}role{0} [{2}role_name{0} [{2}config_name{0}]]
-                Make {2}config_name{0} the currently selected config file in the role named
-                {2}role_name{0}. If {2}config_name{0} is not specified, print a list of config files
-                available for that role and show which one is currently selected. If
-                {2}role_name{0} is not specified, print a table of all roles and their selected
-                config files. 
-            """)
-    else:
-        help_msg = ""
-
-    help_msg = help_msg.format(*format_chars)
-    print(help_msg, end="")
+        return help_item().format(levels=2)
 
 
 class CustomArgumentParser(argparse.ArgumentParser):
@@ -114,7 +124,7 @@ class HelpAction(argparse.Action):
         super().__init__(nargs=nargs, **kwargs)
 
     def __call__(self, parser, namespace, values, option_string=None) -> None:
-        usage(namespace.command)
+        print(help_message(namespace.command))
         parser.exit()
 
 

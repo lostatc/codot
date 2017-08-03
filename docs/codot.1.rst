@@ -77,35 +77,21 @@ is modified.
 
 GLOBAL OPTIONS
 ==============
-**--help**
-    Display a usage message and exit.
-
-**--version**
-    Print the version number and exit.
-
-**--debug**
-    Print a full stack trace instead of an error message if an error occurs.
-
-**-q**, **--quiet**
-    Suppress all non-error output.
+.. This imports documentation from the code.
+.. linotype::
+    :module: codot.cli
+    :func: help_item
+    :item_id: global_opts
+    :children:
 
 COMMANDS
 ========
-**sync** [*options*]
-    Propogate changes in all config files and roles to all source files for
-    which there is a template file, but only if those source files have not
-    been modified since the last sync.
-
-    **-o**, **--overwrite**
-        Overwrite the source files even if they've been modified since the last
-        sync.
-
-**role** [*role_name* [*config_name*]]
-    Make *config_name* the currently selected config file in the role named
-    *role_name*. If *config_name* is not specified, print a list of config
-    files available for that role and show which one is currently selected. If
-    *role_name* is not specified, print a table of all roles and their selected
-    config files.
+.. This imports documentation from the code.
+.. linotype::
+    :module: codot.cli
+    :func: help_item
+    :item_id: commands
+    :children:
 
 EXAMPLES
 ========
