@@ -27,7 +27,11 @@ from codot.commandbase import Command
 
 
 class InitCommand(Command):
-    """Generate the program directory and all its files."""
+    """Generate the program directory and all its files.
+
+    This command is necessary so that the user can start editing files
+    in the program directory without having to run another command first.
+    """
     def main(self):
         """Run the command."""
         os.makedirs(PROGRAM_DIR, exist_ok=True)

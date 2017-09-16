@@ -98,11 +98,11 @@ def help_item() -> Item:
 
 def help_message(command: str) -> str:
     """Get the help message.
-    
+
     Args:
         command: The command to print the help message of. If 'None,' print the
             general help message.
-        
+
     Returns:
         The help message as a string.
     """
@@ -167,6 +167,7 @@ def parse_args() -> argparse.Namespace:
 
     parser_init = subparsers.add_parser("init", add_help=False)
     parser_init.add_argument("--help", action=HelpAction)
+    parser_init.set_defaults(command="init")
 
     parser_sync = subparsers.add_parser("sync", add_help=False)
     parser_sync.add_argument("--help", action=HelpAction)

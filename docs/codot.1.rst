@@ -1,3 +1,6 @@
+=======
+codot.1
+=======
 SYNOPSIS
 ========
 codot [*global_options*] *command* [*command_options*] [*command_args*]
@@ -79,7 +82,7 @@ GLOBAL OPTIONS
 ==============
 .. This imports documentation from the code.
 .. linotype::
-    :module: codot.cli
+    :filepath: ../codot/cli.py
     :func: help_item
     :item_id: global_opts
     :children:
@@ -88,7 +91,7 @@ COMMANDS
 ========
 .. This imports documentation from the code.
 .. linotype::
-    :module: codot.cli
+    :filepath: ../codot/cli.py
     :func: help_item
     :item_id: commands
     :children:
@@ -161,7 +164,7 @@ directory could look like. ::
     ├── priority
     └── settings.conf
 
-This is an example of what the the 'priority' file could look like.
+This is an example of what the 'priority' file could look like.
 
 .. code-block:: none
     :linenos:

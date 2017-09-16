@@ -8,7 +8,7 @@ setup(
     author="Garrett Powell",
     author_email="garrett@gpowell.net",
     license="GPLv3",
-    install_requires=["Sphinx", "pyinotify"],
+    install_requires=["Sphinx", "pyinotify", "linotype"],
     tests_require=["pytest", "pyfakefs"],
     python_requires=">=3.5",
     data_files=[

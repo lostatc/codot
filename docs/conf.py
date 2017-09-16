@@ -139,7 +139,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     (
-        master_doc,
+        "codot.1",
         'codot',
         'consolidate your dotfiles',
         [author],
