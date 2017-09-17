@@ -28,7 +28,7 @@ from linotype import DefinitionStyle, Formatter, Item
 from codot.exceptions import InputError, ProgramError
 from codot.commandbase import Command
 from codot.daemon import Daemon
-from codot.commands.template import TemplateCommand
+from codot.commands.add_template import AddTemplateCommand
 from codot.commands.sync import SyncCommand
 from codot.commands.role import RoleCommand
 
@@ -67,12 +67,12 @@ def help_item() -> Item:
 
     commands = root_item.add_text("Commands:", item_id="commands")
 
-    template_cmd = commands.add_definition(
-        "template", "[options] files...",
+    add_template_cmd = commands.add_definition(
+        "add-template", "[options] files...",
         "Open one or more source files in your editor and save them each as "
-        "a template file.", item_id="template")
-    template_cmd.add_text("\n")
-    template_cmd.add_definition(
+        "a template file.", item_id="add-template")
+    add_template_cmd.add_text("\n")
+    add_template_cmd.add_definition(
         "-r, --revise", "",
         "If the template file already exists, edit it instead of creating a "
         "new one.")
@@ -169,12 +169,12 @@ def parse_args() -> argparse.Namespace:
     subparsers = parser.add_subparsers(dest="command")
     subparsers.required = True
 
-    parser_template = subparsers.add_parser("template", add_help=False)
-    parser_template.add_argument("--help", action=HelpAction)
-    parser_template.add_argument("--revise", "-r", action="store_true")
-    parser_template.add_argument(
+    parser_add_template = subparsers.add_parser("add-template", add_help=False)
+    parser_add_template.add_argument("--help", action=HelpAction)
+    parser_add_template.add_argument("--revise", "-r", action="store_true")
+    parser_add_template.add_argument(
         "files", nargs="+", metavar="files")
-    parser_template.set_defaults(command="template")
+    parser_add_template.set_defaults(command="add-template")
 
     parser_sync = subparsers.add_parser("sync", add_help=False)
     parser_sync.add_argument("--help", action=HelpAction)
@@ -233,8 +233,8 @@ def daemon() -> int:
 
 
 def def_command(cmd_args) -> Command:
-    if cmd_args.command == "template":
-        return TemplateCommand(cmd_args.files, cmd_args.revise)
+    if cmd_args.command == "add-template":
+        return AddTemplateCommand(cmd_args.files, cmd_args.revise)
     elif cmd_args.command == "sync":
         return SyncCommand(cmd_args.overwrite)
     elif cmd_args.command == "role":

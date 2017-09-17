@@ -1,4 +1,4 @@
-"""A class for the 'template' command.
+"""A class for the 'add-template' command.
 
 Copyright © 2017 Garrett Powell <garrett@gpowell.net>
 
@@ -27,7 +27,7 @@ from codot.utils import open_text_editor
 from codot.commandbase import Command
 
 
-class TemplateCommand(Command):
+class AddTemplateCommand(Command):
     """Create a template file from a source file.
 
     Attributes:

@@ -32,7 +32,7 @@ from codot import (
     CONFIG_EXT)
 from codot.exceptions import InputError
 from codot.utils import rm_ext
-from codot.commands.template import TemplateCommand
+from codot.commands.add_template import AddTemplateCommand
 from codot.commands.role import RoleCommand
 from codot.commands.sync import SyncCommand
 from codot.container import ProgramData
@@ -128,19 +128,19 @@ class TestTemplateCommand:
             return 0
 
         monkeypatch.setattr(
-            "codot.commands.template.open_text_editor", edit_text_file)
+            "codot.commands.add_template.open_text_editor", edit_text_file)
 
-    def test_add_template(self, fake_files, patch_editor):
+    def test_add_new_template(self, fake_files, patch_editor):
         """New template files can be created from source files."""
-        cmd = TemplateCommand([fake_files.source], revise=False)
+        cmd = AddTemplateCommand([fake_files.source], revise=False)
         cmd.main()
 
         with open(fake_files.template) as file:
             assert file.read() == "{{AccentColor}}"
 
-    def test_revise_template(self, fake_files, patch_editor):
-        """New template files can be created from source files."""
-        cmd = TemplateCommand([fake_files.source], revise=True)
+    def test_add_revised_template(self, fake_files, patch_editor):
+        """Template files can be revised."""
+        cmd = AddTemplateCommand([fake_files.source], revise=True)
         cmd.main()
 
         expected_output = textwrap.dedent("""\
