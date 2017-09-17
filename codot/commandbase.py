@@ -33,6 +33,17 @@ from codot.exceptions import StatusError
 class Command(abc.ABC):
     """Base class for program commands."""
     def __init__(self) -> None:
+        # Generate files in program directory if they don't already exist.
+        os.makedirs(PROGRAM_DIR, exist_ok=True)
+        os.makedirs(TEMPLATES_DIR, exist_ok=True)
+        os.makedirs(CONFIG_DIR, exist_ok=True)
+        open(PRIORITY_FILE, "a").close()
+        if not os.path.isfile(SETTINGS_FILE):
+            # TODO: Get this path from setup.py instead of hardcoding it.
+            shutil.copy(
+                os.path.join(sys.prefix, "share/codot/settings.conf"),
+                SETTINGS_FILE)
+
         self._lock_socket = None
 
     @abc.abstractmethod

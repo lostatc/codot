@@ -28,10 +28,9 @@ from linotype import DefinitionStyle, Formatter, Item
 from codot.exceptions import InputError, ProgramError
 from codot.commandbase import Command
 from codot.daemon import Daemon
-from codot.commands.init import InitCommand
-from codot.commands.role import RoleCommand
-from codot.commands.sync import SyncCommand
 from codot.commands.template import TemplateCommand
+from codot.commands.sync import SyncCommand
+from codot.commands.role import RoleCommand
 
 
 def help_item() -> Item:
@@ -67,12 +66,6 @@ def help_item() -> Item:
     global_opts.add_text("\n")
 
     commands = root_item.add_text("Commands:", item_id="commands")
-
-    init_cmd = commands.add_definition(
-        "init", "",
-        "Generate the program directory in the current user's home directory.",
-        item_id="init")
-    commands.add_text("\n")
 
     template_cmd = commands.add_definition(
         "template", "[options] files...",
@@ -176,10 +169,6 @@ def parse_args() -> argparse.Namespace:
     subparsers = parser.add_subparsers(dest="command")
     subparsers.required = True
 
-    parser_init = subparsers.add_parser("init", add_help=False)
-    parser_init.add_argument("--help", action=HelpAction)
-    parser_init.set_defaults(command="init")
-
     parser_template = subparsers.add_parser("template", add_help=False)
     parser_template.add_argument("--help", action=HelpAction)
     parser_template.add_argument("--revise", "-r", action="store_true")
@@ -244,9 +233,7 @@ def daemon() -> int:
 
 
 def def_command(cmd_args) -> Command:
-    if cmd_args.command == "init":
-        return InitCommand()
-    elif cmd_args.command == "template":
+    if cmd_args.command == "template":
         return TemplateCommand(cmd_args.files, cmd_args.revise)
     elif cmd_args.command == "sync":
         return SyncCommand(cmd_args.overwrite)

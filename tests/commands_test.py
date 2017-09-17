@@ -30,7 +30,6 @@ from codot import (
     HOME_DIR, PROGRAM_DIR, CONFIG_DIR, TEMPLATES_DIR, PRIORITY_FILE,
     CONFIG_EXT)
 from codot.exceptions import InputError
-from codot.commands.init import InitCommand
 from codot.utils import rm_ext
 from codot.commands.role import RoleCommand
 from codot.commands.sync import SyncCommand
@@ -71,8 +70,6 @@ def copy_config(fs):
 @pytest.fixture
 def fake_files(fs, copy_config) -> FakeFilePaths:
     """Create fake files for testing, using different identifier formats."""
-    InitCommand().main()
-
     files = FakeFilePaths(
         PathName(os.path.join(CONFIG_DIR, "color_scheme")),
         PathName(os.path.join(CONFIG_DIR, "color_scheme/solarized.conf")),
