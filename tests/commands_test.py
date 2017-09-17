@@ -21,6 +21,7 @@ import os
 import sys
 import builtins
 import textwrap
+import subprocess
 from typing import NamedTuple
 
 import pytest
@@ -31,6 +32,7 @@ from codot import (
     CONFIG_EXT)
 from codot.exceptions import InputError
 from codot.utils import rm_ext
+from codot.commands.template import TemplateCommand
 from codot.commands.role import RoleCommand
 from codot.commands.sync import SyncCommand
 from codot.container import ProgramData
@@ -115,6 +117,41 @@ def fake_files(fs, copy_config) -> FakeFilePaths:
         file.write("\n".join([files.role.name, files.config.name]))
 
     return files
+
+
+class TestTemplateCommand:
+    @pytest.fixture
+    def patch_editor(self, monkeypatch):
+        def edit_text_file(filepath):
+            with open(filepath, "a") as file:
+                file.write("{{AccentColor}}")
+            return 0
+
+        monkeypatch.setattr(
+            "codot.commands.template.open_text_editor", edit_text_file)
+
+    def test_add_template(self, fake_files, patch_editor):
+        """New template files can be created from source files."""
+        cmd = TemplateCommand([fake_files.source], revise=False)
+        cmd.main()
+
+        with open(fake_files.template) as file:
+            assert file.read() == "{{AccentColor}}"
+
+    def test_revise_template(self, fake_files, patch_editor):
+        """New template files can be created from source files."""
+        cmd = TemplateCommand([fake_files.source], revise=True)
+        cmd.main()
+
+        expected_output = textwrap.dedent("""\
+            {{Font}}
+            {{FontSize}}
+            {{ForegroundColor}}
+            {{BackgroundColor}}
+            {{AccentColor}}""")
+
+        with open(fake_files.template) as file:
+            assert file.read() == expected_output
 
 
 class TestRoleCommand:

@@ -20,10 +20,10 @@ along with codot.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import shutil
 import tempfile
-import subprocess
 from typing import List
 
 from codot import HOME_DIR, TEMPLATES_DIR
+from codot.utils import open_text_editor
 from codot.commandbase import Command
 
 
@@ -42,30 +42,24 @@ class TemplateCommand(Command):
     def main(self) -> None:
         self.lock()
 
-        # Get default editor for the platform. On Windows, executing the
-        # text file directly invokes the default editor.
-        if os.name == "nt":
-            edit_command = ""
-        elif os.name == "posix":
-            unix_editors = [
-                os.getenv("VISUAL"), os.getenv("EDITOR"), "nano", "vi"]
-            edit_command = [
-                editor for editor in unix_editors if editor is not None][0]
-        else:
-            raise OSError("unsupported platform")
-
         with tempfile.TemporaryDirectory(prefix="codot-") as tmp_dir_path:
             for source_path in self.files:
                 template_path = os.path.join(
                     TEMPLATES_DIR, os.path.relpath(source_path, HOME_DIR))
 
+                # This is not in a context manager because the file will be
+                # cleaned up with the parent directory.
+                tmp_file = tempfile.NamedTemporaryFile(
+                    dir=tmp_dir_path, delete=False)
+                tmp_file_path = tmp_file.name
+                tmp_file.close()
                 if os.path.isfile(template_path) and self.revise:
-                    tmp_file_path = shutil.copy(template_path, tmp_dir_path)
+                    shutil.copy(template_path, tmp_file_path)
                 else:
-                    tmp_file_path = shutil.copy(source_path, tmp_dir_path)
+                    shutil.copy(source_path, tmp_file_path)
 
-                edit_process = subprocess.run([edit_command, tmp_file_path])
-                if edit_process.returncode != 0:
+                return_code = open_text_editor(tmp_file_path)
+                if return_code != 0:
                     continue
                 os.makedirs(os.path.dirname(template_path), exist_ok=True)
                 shutil.move(tmp_file_path, template_path)

@@ -18,7 +18,8 @@ You should have received a copy of the GNU General Public License
 along with codot.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
-from typing import Collection
+import subprocess
+from typing import Collection, List
 
 
 def rm_ext(orig_string: str, substring: str) -> str:
@@ -99,6 +100,31 @@ def print_table(headers: list, data: Collection[tuple]) -> None:
         print(" | ".join([
             "{0:<{1}}".format(field, width)
             for field, width in zip(row, column_lengths)]))
+
+
+def open_text_editor(filepath: str) -> int:
+    """Open the default text editor on a given file path.
+
+    Args:
+        filepath: The path of the file to edit.
+
+    Returns:
+        The return code of the command.
+    """
+    if os.name == "nt":
+        # On Windows, executing the text file directly invokes the default
+        # editor.
+        full_command = [filepath]
+    elif os.name == "posix":
+        unix_editors = [
+            os.getenv("VISUAL"), os.getenv("EDITOR"), "nano", "vi"]
+        edit_command = [
+            editor for editor in unix_editors if editor is not None][0]
+        full_command = [edit_command, filepath]
+    else:
+        raise OSError("unsupported platform")
+
+    return subprocess.run(full_command).returncode
 
 
 class DictProperty:
