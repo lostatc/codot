@@ -35,7 +35,8 @@ class RoleCommand(Command):
         config_name: The name of the config file to select for the role.
     """
     def __init__(
-            self, role_name: Optional[str], config_name=Optional[str]) -> None:
+            self, role_name: Optional[str], config_name: Optional[str]
+            ) -> None:
         super().__init__()
         self.role_name = role_name
         self.role_path = os.path.join(

@@ -31,6 +31,7 @@ from codot.daemon import Daemon
 from codot.commands.init import InitCommand
 from codot.commands.role import RoleCommand
 from codot.commands.sync import SyncCommand
+from codot.commands.template import TemplateCommand
 
 
 def help_item() -> Item:
@@ -73,25 +74,35 @@ def help_item() -> Item:
         item_id="init")
     commands.add_text("\n")
 
+    template_cmd = commands.add_definition(
+        "template", "[options] files...",
+        "Open one or more source files in your editor and save them each as "
+        "a template file.", item_id="template")
+    template_cmd.add_text("\n")
+    template_cmd.add_definition(
+        "-r, --revise", "",
+        "If the template file already exists, edit it instead of creating a "
+        "new one.")
+    commands.add_text("\n")
+
     sync_cmd = commands.add_definition(
         "sync", "[options]",
-        "Propagate changes in all config files and roles to all source files "
-        "for which there is a template file, but only if those source files "
-        "have not been modified since the last sync.", item_id="sync")
-    commands.add_text("\n")
+        "Update source files with changes from config files, but only if "
+        "those source files have not been modified since the last sync.",
+        item_id="sync")
     sync_cmd.add_text("\n")
     sync_cmd.add_definition(
         "-o, --overwrite", "",
         "Overwrite the source files even if they've been modified since the "
         "last sync.")
+    commands.add_text("\n")
 
     role_cmd = commands.add_definition(
         "role", "[role_name [config_name]]",
         "Make config_name the currently selected config file in the role "
         "named role_name. If config_name is not specified, print a list of "
-        "config files available for that role and show which one is currently "
-        "selected. If role_name is not specified, print a table of all roles "
-        "and their selected config files.", item_id="role")
+        "config files available for that role. If role_name is not "
+        "specified, print a table of all roles.", item_id="role")
 
     return root_item
 
@@ -169,6 +180,13 @@ def parse_args() -> argparse.Namespace:
     parser_init.add_argument("--help", action=HelpAction)
     parser_init.set_defaults(command="init")
 
+    parser_template = subparsers.add_parser("template", add_help=False)
+    parser_template.add_argument("--help", action=HelpAction)
+    parser_template.add_argument("--revise", "-r", action="store_true")
+    parser_template.add_argument(
+        "files", nargs="+", metavar="files")
+    parser_template.set_defaults(command="template")
+
     parser_sync = subparsers.add_parser("sync", add_help=False)
     parser_sync.add_argument("--help", action=HelpAction)
     parser_sync.add_argument("--overwrite", "-o", action="store_true")
@@ -228,6 +246,8 @@ def daemon() -> int:
 def def_command(cmd_args) -> Command:
     if cmd_args.command == "init":
         return InitCommand()
+    elif cmd_args.command == "template":
+        return TemplateCommand(cmd_args.files, cmd_args.revise)
     elif cmd_args.command == "sync":
         return SyncCommand(cmd_args.overwrite)
     elif cmd_args.command == "role":
