@@ -93,8 +93,12 @@ def help_item() -> Item:
 
     list_cmd = commands.add_definition(
         "list", "",
-        "List identifiers from each template file. Highlight identifiers "
-        "that aren't in any config file.", item_id="list")
+        "List all identifiers and highlight the ones that aren't in any "
+        "config file.", item_id="list")
+    list_cmd.add_text("\n")
+    list_cmd.add_definition(
+        "-g, --group", "",
+        "Group identifiers by their template file.")
     commands.add_text("\n")
 
     role_cmd = commands.add_definition(
@@ -190,6 +194,7 @@ def parse_args() -> argparse.Namespace:
 
     parser_list = subparsers.add_parser("list", add_help=False)
     parser_list.add_argument("--help", action=HelpAction)
+    parser_list.add_argument("--group", "-g", action="store_true")
     parser_list.set_defaults(command="list")
 
     parser_role = subparsers.add_parser("role", add_help=False)
@@ -249,7 +254,7 @@ def def_command(cmd_args) -> Command:
     elif cmd_args.command == "sync":
         return SyncCommand(cmd_args.overwrite)
     elif cmd_args.command == "list":
-        return ListCommand()
+        return ListCommand(cmd_args.group)
     elif cmd_args.command == "role":
         return RoleCommand(cmd_args.role_name, cmd_args.config_name)
 

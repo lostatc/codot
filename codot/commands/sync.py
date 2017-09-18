@@ -36,7 +36,7 @@ from codot.commandbase import Command
 
 
 class SyncCommand(Command):
-    """Propagate changes in the config files to the source files.
+    """Update source files with changes from config files.
 
     Attributes:
         overwrite: Overwrite source files even if they've been modified since

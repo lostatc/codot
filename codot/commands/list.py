@@ -32,10 +32,12 @@ class ListCommand(Command):
     """List identifiers from each template file.
 
     Attributes:
+        group: Group identifiers by their template file.
         data: Persistent program information such as config values.
     """
-    def __init__(self) -> None:
+    def __init__(self, group=False) -> None:
         super().__init__()
+        self.group = group
         self.data = ProgramData()
 
     def main(self) -> None:
@@ -69,7 +71,12 @@ class ListCommand(Command):
             config_identifiers.extend(config_file.raw_vals.keys())
 
         # Construct data for the table.
-        table_data = [("Identifiers", "Template File")]
+        if self.group:
+            table_data = [("Identifiers", "Template File")]
+        else:
+            table_data = [("Identifiers",)]
+            used_identifiers = set()
+
         for source_path, identifiers in sorted(
                 template_identifiers.items(), key=lambda x: x[0]):
             for i, identifier in enumerate(sorted(identifiers)):
@@ -83,7 +90,13 @@ class ListCommand(Command):
                 else:
                     source_path_entry = ""
 
-                table_data.append((identifier_entry, source_path_entry))
+                if self.group:
+                    table_data.append((identifier_entry, source_path_entry))
+                else:
+                    if identifier in used_identifiers:
+                        continue
+                    table_data.append((identifier_entry,))
+                    used_identifiers.add(identifier)
 
         # Print data as a table.
         table = SingleTable(table_data)
