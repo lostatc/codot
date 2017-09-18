@@ -33,8 +33,8 @@ def rm_ext(orig_string: str, substring: str) -> str:
     Returns:
         The original string with the substring removed.
     """
-    if substring:
-        return "".join(orig_string.rsplit(substring, 1))
+    if substring and orig_string[-len(substring):] == substring:
+            return orig_string[:-len(substring)]
     else:
         return orig_string
 
