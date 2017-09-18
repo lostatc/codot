@@ -28,12 +28,12 @@ from codot.utils import rm_ext, add_ext
 
 
 class RoleCommand(Command):
-    """Switch the currently selected config file for a role.
+    """Run the "role" command.
 
     Attributes:
-        role_name: The name of the role to modify.
+        role_name: The "role_name" argument for the command.
+        config_name: The "config_name" argument for the command.
         role_path: The absolute path of the role directory.
-        config_name: The name of the config file to select for the role.
     """
     def __init__(
             self, role_name: Optional[str], config_name: Optional[str]

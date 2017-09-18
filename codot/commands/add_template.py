@@ -28,11 +28,11 @@ from codot.commandbase import Command
 
 
 class AddTemplateCommand(Command):
-    """Create a template file from a source file.
+    """Run the "add-template" command.
 
     Attributes:
-        revise: If the template file already exists, edit it instead of
-            creating a new one.
+        files: The "files" argument for the command.
+        revise: The "--revise" option was given.
     """
     def __init__(self, files: List[str], revise=False) -> None:
         super().__init__()

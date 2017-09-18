@@ -29,10 +29,10 @@ from codot.container import ProgramData, ConfigFile
 
 
 class ListCommand(Command):
-    """List identifiers from each template file.
+    """Run the "list" command.
 
     Attributes:
-        group: Group identifiers by their template file.
+        group: The "--group" option was given.
         data: Persistent program information such as config values.
     """
     def __init__(self, group=False) -> None:
