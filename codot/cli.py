@@ -30,6 +30,7 @@ from codot.commandbase import Command
 from codot.daemon import Daemon
 from codot.commands.add_template import AddTemplateCommand
 from codot.commands.sync import SyncCommand
+from codot.commands.list import ListCommand
 from codot.commands.role import RoleCommand
 
 
@@ -88,6 +89,12 @@ def help_item() -> Item:
         "-o, --overwrite", "",
         "Overwrite the source files even if they've been modified since the "
         "last sync.")
+    commands.add_text("\n")
+
+    list_cmd = commands.add_definition(
+        "list", "",
+        "List identifiers from each template file. Highlight identifiers "
+        "that aren't in any config file.", item_id="list")
     commands.add_text("\n")
 
     role_cmd = commands.add_definition(
@@ -181,6 +188,10 @@ def parse_args() -> argparse.Namespace:
     parser_sync.add_argument("--overwrite", "-o", action="store_true")
     parser_sync.set_defaults(command="sync")
 
+    parser_list = subparsers.add_parser("list", add_help=False)
+    parser_list.add_argument("--help", action=HelpAction)
+    parser_list.set_defaults(command="list")
+
     parser_role = subparsers.add_parser("role", add_help=False)
     parser_role.add_argument("--help", action=HelpAction)
     parser_role.add_argument(
@@ -237,6 +248,8 @@ def def_command(cmd_args) -> Command:
         return AddTemplateCommand(cmd_args.files, cmd_args.revise)
     elif cmd_args.command == "sync":
         return SyncCommand(cmd_args.overwrite)
+    elif cmd_args.command == "list":
+        return ListCommand()
     elif cmd_args.command == "role":
         return RoleCommand(cmd_args.role_name, cmd_args.config_name)
 

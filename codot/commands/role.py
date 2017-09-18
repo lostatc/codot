@@ -20,10 +20,11 @@ along with codot.  If not, see <http://www.gnu.org/licenses/>.
 import os
 from typing import Optional
 
-from codot import CONFIG_DIR, CONFIG_EXT
+from terminaltables import SingleTable
+from codot import CONFIG_DIR, CONFIG_EXT, ANSI_NORMAL, ANSI_GREEN
 from codot.exceptions import InputError
 from codot.commandbase import Command
-from codot.utils import print_table, rm_ext, add_ext
+from codot.utils import rm_ext, add_ext
 
 
 class RoleCommand(Command):
@@ -48,7 +49,7 @@ class RoleCommand(Command):
         self.lock()
 
         if not self.role_name:
-            role_names = []
+            table_data = []
             for entry in os.scandir(CONFIG_DIR):
                 if not entry.is_dir():
                     continue
@@ -59,10 +60,11 @@ class RoleCommand(Command):
                         CONFIG_EXT))
                 except FileNotFoundError:
                     selected_config = ""
-                role_names.append((role_name, selected_config))
-            role_names.sort(key=lambda x: x[1])
-            headers = ["Role", "Selected Config"]
-            print_table(headers, role_names)
+                table_data.append((role_name, selected_config))
+            table_data.sort(key=lambda x: x[1])
+            table_data.insert(0, ("Role", "Selected Config"))
+            table = SingleTable(table_data)
+            print(table.table)
             return
 
         if not os.path.isdir(self.role_path):
@@ -86,9 +88,9 @@ class RoleCommand(Command):
                 if selected_name == config_name:
                     print_output = (
                         "* "
-                        + "\33[32m"  # ANSI green text
+                        + ANSI_GREEN
                         + rm_ext(config_name, CONFIG_EXT)
-                        + "\33[0m")  # ANSI normal text
+                        + ANSI_NORMAL)
                 else:
                     print_output = "  " + rm_ext(config_name, CONFIG_EXT)
                 print(print_output)

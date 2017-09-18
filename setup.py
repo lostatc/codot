@@ -8,9 +8,11 @@ setup(
     author="Garrett Powell",
     author_email="garrett@gpowell.net",
     license="GPLv3",
-    install_requires=["Sphinx", "pyinotify", "linotype"],
+    install_requires=["Sphinx", "pyinotify", "linotype", "terminaltables"],
     tests_require=["pytest", "pyfakefs"],
     python_requires=">=3.5",
+    extras_require={
+        "Colored output in Windows": ["colorama"]}
     data_files=[
         ("bin",
             ["scripts/codot", "scripts/codotd"]),

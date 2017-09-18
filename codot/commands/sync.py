@@ -41,6 +41,7 @@ class SyncCommand(Command):
     Attributes:
         overwrite: Overwrite source files even if they've been modified since
             the last sync.
+        data: Persistent program information such as config values.
     """
     def __init__(self, overwrite=False) -> None:
         super().__init__()
