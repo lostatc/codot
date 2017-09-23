@@ -58,6 +58,27 @@ class TemplateFile:
         except FileNotFoundError:
             return None
 
+    def get_identifier_names(self, id_format: str) -> List[str]:
+        """Get all identifier names used in the template file.
+
+        Args:
+            id_format: The format of identifiers in the template file, with
+                "%s" representing the name of the identifier.
+
+        Returns:
+            A deduplicated list of names of identifiers.
+        """
+        identifier_names = set()
+        identifier_regex = re.compile(
+            re.escape(id_format).replace(r"\%s", r"([\w-]+)"))
+
+        with open(self.path) as file:
+            for line in file:
+                for match_string in identifier_regex.findall(line):
+                    identifier_names.add(match_string)
+
+        return list(identifier_names)
+
 
 class UserConfigFile(ConfigFile):
     """Manage a user-created config file."""

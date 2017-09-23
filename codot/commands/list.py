@@ -40,6 +40,11 @@ class ListCommand(Command):
         self.data = ProgramData()
 
     def main(self) -> None:
+        try:
+            self.data.read()
+        except FileNotFoundError:
+            self.data.generate()
+
         # Compile regex for pulling identifier names from template files.
         identifier_regex = re.compile(
             re.escape(self.data.id_format).replace(
@@ -50,12 +55,8 @@ class ListCommand(Command):
         for template in self.user_files.get_templates():
             source_path = os.path.join(
                 "~", os.path.relpath(template.source_path, HOME_DIR))
-            template_identifiers[source_path] = []
-
-            with open(template.path) as file:
-                for line in file:
-                    for match_string in identifier_regex.findall(line):
-                        template_identifiers[source_path].append(match_string)
+            template_identifiers[source_path] = template.get_identifier_names(
+                self.data.id_format)
 
         # Get a list of identifiers present in any config file.
         config_identifiers = self.user_files.get_config_values().keys()
