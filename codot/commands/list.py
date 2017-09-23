@@ -22,10 +22,9 @@ import re
 
 from terminaltables import SingleTable
 
-from codot import TEMPLATES_DIR, CONFIG_DIR, ANSI_RED, ANSI_NORMAL, CONFIG_EXT
-from codot.utils import rec_scan
+from codot import ANSI_RED, ANSI_NORMAL, HOME_DIR
 from codot.commandbase import Command
-from codot.container import ProgramData, ConfigFile
+from codot.container import ProgramData
 
 
 class ListCommand(Command):
@@ -48,55 +47,47 @@ class ListCommand(Command):
 
         # Get a dict of identifiers from each template file.
         template_identifiers = {}
-        for entry in rec_scan(TEMPLATES_DIR):
-            if not entry.is_file():
-                continue
-
+        for template in self.user_files.get_templates():
             source_path = os.path.join(
-                "~", os.path.relpath(entry.path, TEMPLATES_DIR))
+                "~", os.path.relpath(template.source_path, HOME_DIR))
             template_identifiers[source_path] = []
 
-            with open(entry.path) as file:
+            with open(template.path) as file:
                 for line in file:
                     for match_string in identifier_regex.findall(line):
                         template_identifiers[source_path].append(match_string)
 
         # Get a list of identifiers present in any config file.
-        config_identifiers = []
-        for entry in rec_scan(CONFIG_DIR):
-            if not entry.name.endswith(CONFIG_EXT):
-                continue
-            config_file = ConfigFile(entry.path)
-            config_file.read()
-            config_identifiers.extend(config_file.raw_vals.keys())
+        config_identifiers = self.user_files.get_config_values().keys()
+
+        def add_color(identifier: str) -> str:
+            if identifier in config_identifiers:
+                return identifier
+            else:
+                return ANSI_RED + identifier + ANSI_NORMAL
 
         # Construct data for the table.
         if self.group:
-            table_data = [("Identifiers", "Template File")]
+            table_data = [("Identifier", "Template File")]
+            for source_path, identifiers in sorted(
+                    template_identifiers.items()):
+                identifiers.sort()
+                table_data.append(("", ""))
+                table_data.append((add_color(identifiers[0]), source_path))
+                table_data.extend(
+                    (add_color(identifier), "")
+                    for identifier in identifiers[1:])
+
+            # Remove the blank row at the top of the table.
+            del table_data[1]
         else:
-            table_data = [("Identifiers",)]
-            used_identifiers = set()
-
-        for source_path, identifiers in sorted(
-                template_identifiers.items(), key=lambda x: x[0]):
-            for i, identifier in enumerate(sorted(identifiers)):
-                if identifier in config_identifiers:
-                    identifier_entry = identifier
-                else:
-                    identifier_entry = ANSI_RED + identifier + ANSI_NORMAL
-
-                if i == 0:
-                    source_path_entry = source_path
-                else:
-                    source_path_entry = ""
-
-                if self.group:
-                    table_data.append((identifier_entry, source_path_entry))
-                else:
-                    if identifier in used_identifiers:
-                        continue
-                    table_data.append((identifier_entry,))
-                    used_identifiers.add(identifier)
+            unique_identifiers = {
+                identifier for group in template_identifiers.values()
+                for identifier in group}
+            table_data = [("Identifier",)]
+            table_data.extend(
+                (add_color(identifier),)
+                for identifier in sorted(unique_identifiers))
 
         # Print data as a table.
         table = SingleTable(table_data)

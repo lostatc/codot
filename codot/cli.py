@@ -92,9 +92,9 @@ def help_item() -> Item:
     commands.add_text("\n")
 
     list_cmd = commands.add_definition(
-        "list", "",
+        "list", "[options]",
         "List all identifiers and highlight the ones that aren't in any "
-        "config file.", item_id="list")
+        "enabled config file.", item_id="list")
     list_cmd.add_text("\n")
     list_cmd.add_definition(
         "-g, --group", "",

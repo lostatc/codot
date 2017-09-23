@@ -27,11 +27,19 @@ from typing import Optional
 from codot import (
     PROGRAM_DIR, TEMPLATES_DIR, CONFIG_DIR, PRIORITY_FILE, SETTINGS_FILE,
     CONFIG_EXT)
+from codot.user_files import UserFiles
 from codot.exceptions import StatusError
 
 
 class Command(abc.ABC):
-    """Base class for program commands."""
+    """Base class for program commands.
+
+    Attributes:
+        user_files = An object for reading and writing user-created files in
+            the program directory.
+        _lock_socket: A Unix domain socket used for preventing multiple
+            processes from running at the same time.
+    """
     def __init__(self) -> None:
         # Generate files in program directory if they don't already exist.
         os.makedirs(PROGRAM_DIR, exist_ok=True)
@@ -45,6 +53,7 @@ class Command(abc.ABC):
                 SETTINGS_FILE)
 
         self._lock_socket = None
+        self.user_files = UserFiles(CONFIG_DIR, TEMPLATES_DIR, PRIORITY_FILE)
 
     @abc.abstractmethod
     def main(self) -> None:

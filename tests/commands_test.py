@@ -28,33 +28,20 @@ import pytest
 
 import codot
 from codot import (
-    HOME_DIR, PROGRAM_DIR, CONFIG_DIR, TEMPLATES_DIR, PRIORITY_FILE,
-    CONFIG_EXT)
+    PRIORITY_FILE, CONFIG_EXT, CONFIG_DIR, TEMPLATES_DIR, HOME_DIR)
 from codot.exceptions import InputError
-from codot.utils import rm_ext
+from codot.utils import rm_ext, add_ext
 from codot.commands.add_template import AddTemplateCommand
 from codot.commands.role import RoleCommand
 from codot.commands.sync import SyncCommand
 from codot.container import ProgramData
+from codot.user_files import UserConfigFile, Role, TemplateFile
 
 real_open = builtins.open
 
-PathNameBase = NamedTuple("PathNameBase", [("path", str)])
-
-
-class PathName(PathNameBase):
-    __slots__ = ()
-
-    @property
-    def name(self) -> str:
-        return rm_ext(os.path.basename(self.path), CONFIG_EXT)
-
-
 FakeFilePaths = NamedTuple(
     "FakeFilePaths", [
-        ("role", PathName), ("role_config1", PathName),
-        ("role_config2", PathName), ("config", PathName),
-        ("template", str), ("source", str)
+        ("role", Role), ("config", UserConfigFile), ("template", TemplateFile)
     ])
 
 
@@ -73,22 +60,21 @@ def copy_config(fs):
 def fake_files(fs, copy_config) -> FakeFilePaths:
     """Create fake files for testing, using different identifier formats."""
     files = FakeFilePaths(
-        PathName(os.path.join(CONFIG_DIR, "color_scheme")),
-        PathName(os.path.join(CONFIG_DIR, "color_scheme/solarized.conf")),
-        PathName(os.path.join(CONFIG_DIR, "color_scheme/zenburn.conf")),
-        PathName(os.path.join(CONFIG_DIR, "desktop.conf")),
-        os.path.join(TEMPLATES_DIR, ".config/i3/config"),
-        os.path.join(HOME_DIR, ".config/i3/config"))
+        Role("color_scheme", CONFIG_DIR),
+        UserConfigFile(os.path.join(CONFIG_DIR, "desktop.conf")),
+        TemplateFile(".config/i3/config", TEMPLATES_DIR))
 
     # Create config files.
     fs.CreateFile(
-        files.role_config1.path, contents=textwrap.dedent("""\
+        os.path.join(files.role.dir_path, "solarized.conf"),
+        contents=textwrap.dedent("""\
             ForegroundColor=#93a1a1
             BackgroundColor=#002b36
             Font=NotoSans
             """))
     fs.CreateFile(
-        files.role_config2.path, contents=textwrap.dedent("""\
+        os.path.join(files.role.dir_path, "zenburn.conf"),
+        contents=textwrap.dedent("""\
             ForegroundColor=#ffffff
             BackgroundColor=#000000
             Font=Roboto
@@ -98,11 +84,12 @@ def fake_files(fs, copy_config) -> FakeFilePaths:
             Font=DejaVuSans
             FontSize=12
             """))
-    os.symlink(files.role_config1.path, files.role.path + CONFIG_EXT)
+    os.symlink(
+        files.role.get_configs()[0].path, files.role.symlink_path)
 
     # Create template files.
     fs.CreateFile(
-        files.template, contents=textwrap.dedent("""\
+        files.template.path, contents=textwrap.dedent("""\
             {{Font}}
             {{FontSize}}
             {{ForegroundColor}}
@@ -110,7 +97,8 @@ def fake_files(fs, copy_config) -> FakeFilePaths:
             """))
 
     # Create source files.
-    fs.CreateFile(files.source)
+    fs.CreateFile(os.path.join(
+        HOME_DIR, os.path.relpath(files.template.path, TEMPLATES_DIR)))
 
     # Create 'priority' file.
     with open(PRIORITY_FILE, "w") as file:
@@ -132,15 +120,17 @@ class TestTemplateCommand:
 
     def test_add_new_template(self, fake_files, patch_editor):
         """New template files can be created from source files."""
-        cmd = AddTemplateCommand([fake_files.source], revise=False)
+        cmd = AddTemplateCommand(
+            [fake_files.template.source_path], revise=False)
         cmd.main()
 
-        with open(fake_files.template) as file:
+        with open(fake_files.template.path) as file:
             assert file.read() == "{{AccentColor}}"
 
     def test_add_revised_template(self, fake_files, patch_editor):
         """Template files can be revised."""
-        cmd = AddTemplateCommand([fake_files.source], revise=True)
+        cmd = AddTemplateCommand(
+            [fake_files.template.source_path], revise=True)
         cmd.main()
 
         expected_output = textwrap.dedent("""\
@@ -150,7 +140,7 @@ class TestTemplateCommand:
             {{BackgroundColor}}
             {{AccentColor}}""")
 
-        with open(fake_files.template) as file:
+        with open(fake_files.template.path) as file:
             assert file.read() == expected_output
 
 
@@ -180,14 +170,16 @@ class TestRoleCommand:
     @pytest.mark.parametrize("extension", ["", CONFIG_EXT])
     def test_symlink_created(self, fs, fake_files, extension):
         """A symlink is created for the role."""
-        config_name = fake_files.role_config2.name + extension
+        config_name = add_ext(fake_files.role.get_configs()[1].name, extension)
 
         cmd = RoleCommand(fake_files.role.name, config_name)
         cmd.main()
 
-        symlink_path = fake_files.role.path + CONFIG_EXT
+        symlink_path = fake_files.role.symlink_path
         assert os.path.islink(symlink_path)
-        assert os.readlink(symlink_path) == fake_files.role_config2.path
+        assert (
+            fake_files.role.selected.path
+            == fake_files.role.get_configs()[1].path)
 
 
 class TestSyncCommand:
@@ -198,15 +190,15 @@ class TestSyncCommand:
         # sync in the info file.
         data = ProgramData()
         data.generate()
-        os.utime(fake_files.source, times=None)
+        os.utime(fake_files.template.source_path, times=None)
 
         cmd = SyncCommand(overwrite=overwrite)
         cmd.main()
 
         if overwrite:
-            assert os.stat(fake_files.source).st_size > 0
+            assert os.stat(fake_files.template.source_path).st_size > 0
         else:
-            assert os.stat(fake_files.source).st_size == 0
+            assert os.stat(fake_files.template.source_path).st_size == 0
 
     def test_missing_identifiers(self, fs, fake_files):
         """Identifiers not found in a config file raise an exception."""
@@ -219,12 +211,12 @@ class TestSyncCommand:
 
     def test_missing_source_files(self, fs, fake_files):
         """Template files without corresponding source files are ignored."""
-        os.remove(fake_files.source)
+        os.remove(fake_files.template.source_path)
 
         cmd = SyncCommand()
         cmd.main()
 
-        assert not os.path.isfile(fake_files.source)
+        assert fake_files.template.source_path is None
 
     @pytest.mark.parametrize("id_format", ["{{%s}}", "__%s__", "${%s}"])
     def test_propagate_config_changes(
@@ -234,7 +226,7 @@ class TestSyncCommand:
         template_contents = "\n".join(
             id_format.replace("%s", identifier) for identifier in identifiers)
 
-        with open(fake_files.template, "w") as file:
+        with open(fake_files.template.path, "w") as file:
             file.write(template_contents)
 
         cmd = SyncCommand()
@@ -247,5 +239,5 @@ class TestSyncCommand:
             12
             #93a1a1
             #002b36""")
-        with open(fake_files.source, "r") as file:
+        with open(fake_files.template.source_path, "r") as file:
             assert file.read() == expected_content

@@ -18,18 +18,24 @@ You should have received a copy of the GNU General Public License
 along with codot.  If not, see <http://www.gnu.org/licenses/>.
 """
 import re
+import os
 import json
-import datetime
 import time
+import datetime
 from typing import Any, Optional
 
-from codot import SETTINGS_FILE, INFO_FILE
+from codot import SETTINGS_FILE, INFO_FILE, CONFIG_EXT, HOME_DIR
 from codot.exceptions import FileParseError
-from codot.utils import DictProperty
+from codot.utils import DictProperty, rm_ext
 
 
 class ProgramData:
-    """Access persistently stored data."""
+    """Access persistently stored data.
+
+    Attributes:
+        _cfg_file: An object for data stored in the program config file.
+        _info_file: An object for data stored in the info file.
+    """
     def __init__(self) -> None:
         self._cfg_file = ProgramConfigFile(SETTINGS_FILE)
         self._info_file = ProgramInfoFile(INFO_FILE)

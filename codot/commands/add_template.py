@@ -22,9 +22,10 @@ import shutil
 import tempfile
 from typing import List
 
-from codot import HOME_DIR, TEMPLATES_DIR
+from codot import HOME_DIR
 from codot.utils import open_text_editor
 from codot.commandbase import Command
+from codot.user_files import TemplateFile
 
 
 class AddTemplateCommand(Command):
@@ -44,8 +45,10 @@ class AddTemplateCommand(Command):
 
         with tempfile.TemporaryDirectory(prefix="codot-") as tmp_dir_path:
             for source_path in self.files:
-                template_path = os.path.join(
-                    TEMPLATES_DIR, os.path.relpath(source_path, HOME_DIR))
+                abs_source_path = os.path.abspath(source_path)
+                template = TemplateFile(
+                    os.path.relpath(abs_source_path, HOME_DIR),
+                    self.user_files.templates_dir)
 
                 # This is not in a context manager because the file will be
                 # cleaned up with the parent directory.
@@ -53,13 +56,13 @@ class AddTemplateCommand(Command):
                     dir=tmp_dir_path, delete=False)
                 tmp_file_path = tmp_file.name
                 tmp_file.close()
-                if os.path.isfile(template_path) and self.revise:
-                    shutil.copy(template_path, tmp_file_path)
+                if os.path.isfile(template.path) and self.revise:
+                    shutil.copy(template.path, tmp_file_path)
                 else:
-                    shutil.copy(source_path, tmp_file_path)
+                    shutil.copy(template.source_path, tmp_file_path)
 
                 return_code = open_text_editor(tmp_file_path)
                 if return_code != 0:
                     continue
-                os.makedirs(os.path.dirname(template_path), exist_ok=True)
-                shutil.move(tmp_file_path, template_path)
+                os.makedirs(os.path.dirname(template.path), exist_ok=True)
+                shutil.move(tmp_file_path, template.path)

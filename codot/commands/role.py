@@ -21,10 +21,10 @@ import os
 from typing import Optional
 
 from terminaltables import SingleTable
-from codot import CONFIG_DIR, CONFIG_EXT, ANSI_NORMAL, ANSI_GREEN
+from codot import ANSI_NORMAL, ANSI_GREEN
 from codot.exceptions import InputError
 from codot.commandbase import Command
-from codot.utils import rm_ext, add_ext
+from codot.user_files import Role
 
 
 class RoleCommand(Command):
@@ -33,79 +33,63 @@ class RoleCommand(Command):
     Attributes:
         role_name: The "role_name" argument for the command.
         config_name: The "config_name" argument for the command.
-        role_path: The absolute path of the role directory.
+        role: A Role object for the role.
+        config: A UserConfigFile object for the role.
     """
     def __init__(
             self, role_name: Optional[str], config_name: Optional[str]
             ) -> None:
         super().__init__()
         self.role_name = role_name
-        self.role_path = os.path.join(
-            CONFIG_DIR, role_name) if role_name else None
-        self.config_name = add_ext(
-            config_name, CONFIG_EXT) if config_name else None
+        self.config_name = config_name
+        self.role = None
+        self.config = None
 
     def main(self) -> None:
         self.lock()
 
         if not self.role_name:
-            table_data = []
-            for entry in os.scandir(CONFIG_DIR):
-                if not entry.is_dir():
-                    continue
-                role_name = entry.name
-                try:
-                    selected_config = os.path.basename(rm_ext(
-                        os.readlink(add_ext(entry.path, CONFIG_EXT)),
-                        CONFIG_EXT))
-                except FileNotFoundError:
-                    selected_config = ""
-                table_data.append((role_name, selected_config))
-            table_data.sort(key=lambda x: x[1])
+            table_data = [
+                (role.name, role.selected.name)
+                for role in self.user_files.get_roles()]
             table_data.insert(0, ("Role", "Selected Config"))
             table = SingleTable(table_data)
             print(table.table)
             return
 
-        if not os.path.isdir(self.role_path):
+        self.role = Role(self.role_name, self.user_files.config_dir)
+
+        if not os.path.isdir(self.role.dir_path):
             # Role directory doesn't exist.
             raise InputError("no such role '{}'".format(self.role_name))
 
-        # Get a list of the names of all available config files.
-        role_configs = {
-            entry.name for entry in os.scandir(self.role_path)
-            if entry.is_file() and entry.name.endswith(CONFIG_EXT)}
+        role_configs = self.role.get_configs()
 
         if not self.config_name:
             # List the names of available config files alphabetically,
             # indicating which one is selected.
-            for config_name in sorted(role_configs):
-                try:
-                    selected_name = os.path.basename(
-                        os.readlink(self.role_path + CONFIG_EXT))
-                except FileNotFoundError:
-                    selected_name = None
-                if selected_name == config_name:
-                    print_output = (
-                        "* "
-                        + ANSI_GREEN
-                        + rm_ext(config_name, CONFIG_EXT)
-                        + ANSI_NORMAL)
+            for config in sorted(role_configs, key=lambda x: x.name):
+                print_output = []
+                if self.role.selected.name == config.name:
+                    print_output.append(
+                        "* " + ANSI_GREEN + config.name + ANSI_NORMAL)
                 else:
-                    print_output = "  " + rm_ext(config_name, CONFIG_EXT)
-                print(print_output)
+                    print_output.append("  " + config.name)
+                print("\n".join(print_output))
             return
 
-        # Switch selected config file.
-        if self.config_name not in role_configs:
+        # Get the selected config by its name if it exists.
+        self.config = self.role.get_config_by_name(self.config_name)
+
+        if not self.config:
             raise InputError(
                 "no such config '{}' in this role".format(self.config_name))
+
+        # Switch the selected config file.
         try:
-            os.remove(self.role_path + CONFIG_EXT)
+            os.remove(self.role.symlink_path)
         except FileNotFoundError:
             pass
-        os.symlink(
-            os.path.join(self.role_path, self.config_name),
-            self.role_path + CONFIG_EXT)
+        os.symlink(self.config.path, self.role.symlink_path)
         print("Switched '{0}' to '{1}'".format(
-            self.role_name, rm_ext(self.config_name, CONFIG_EXT)))
+            self.role_name, self.config.name))

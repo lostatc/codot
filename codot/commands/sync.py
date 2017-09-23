@@ -18,20 +18,14 @@ You should have received a copy of the GNU General Public License
 along with codot.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
-import sys
 import time
 import tempfile
 import shutil
 import re
 import contextlib
-from typing import Collection
 
-from codot import (
-    HOME_DIR, TEMPLATES_DIR, CONFIG_DIR, INFO_FILE, SETTINGS_FILE,
-    PRIORITY_FILE, CONFIG_EXT)
-from codot.exceptions import InputError, StatusError
-from codot.utils import rec_scan, rm_ext, add_ext
-from codot.container import ConfigFile, ProgramData
+from codot.exceptions import InputError
+from codot.container import ProgramData
 from codot.commandbase import Command
 
 
@@ -54,51 +48,17 @@ class SyncCommand(Command):
         except FileNotFoundError:
             self.data.generate()
 
-        if self.overwrite or self.data.overwrite_always:
-            overwrite_source = True
-        else:
-            overwrite_source = False
+        overwrite_source = bool(self.overwrite or self.data.overwrite_always)
 
-        # Get a list of tuples each containing a matching template and
-        # source file.
-        template_pairs = []
-        for entry in rec_scan(TEMPLATES_DIR):
-            if not entry.is_file():
-                continue
-
-            template_path = entry.path
-            source_path = os.path.join(
-                HOME_DIR, os.path.relpath(entry.path, TEMPLATES_DIR))
-            try:
-                if os.path.isdir(source_path):
-                    print(
-                        "Error: skipping source file that exists but is a "
-                        "directory: {}".format(source_path), file=sys.stderr)
-                    continue
-                source_mtime = os.stat(source_path).st_mtime
-            except FileNotFoundError:
-                # Template files without a corresponding source file are
-                # skipped.
-                continue
-
+        # Get a list of templates, possibly excluding templates that have been
+        # modified since the last sync.
+        templates = []
+        for template in self.user_files.get_templates():
+            source_mtime = os.stat(template.source_path).st_mtime
             if source_mtime <= self.data.last_sync or overwrite_source:
-                template_pairs.append((template_path, source_path))
+                templates.append(template)
 
-        # Get a priority-ordered list of enabled configs and roles.
-        with open(PRIORITY_FILE, "r") as file:
-            config_priority = [
-                add_ext(line.strip(), CONFIG_EXT)
-                for line in file if line.strip()]
-
-        # Get a dict of values from all config files. Reverse the order of
-        # the priority file so that values from higher-priority files
-        # overwrite values from lower-priority ones.
-        config_values = {}
-        for config_name in reversed(config_priority):
-            full_path = os.path.join(CONFIG_DIR, config_name)
-            config_file = ConfigFile(full_path)
-            config_file.read()
-            config_values.update(config_file.raw_vals)
+        config_values = self.user_files.get_config_values()
 
         identifier_regex = re.compile(
             re.escape(self.data.id_format).replace(
@@ -108,7 +68,7 @@ class SyncCommand(Command):
         tmp_paths = []
         tmp_dir = tempfile.TemporaryDirectory(prefix="codot-")
         input_errors = []
-        for template_path, source_path in template_pairs:
+        for template in templates:
             with contextlib.ExitStack() as stack:
                 # Temporary files are used to make updating the source files
                 # a somewhat atomic operation. A temporary directory is used so
@@ -118,7 +78,7 @@ class SyncCommand(Command):
                     tempfile.NamedTemporaryFile(
                         mode="w+", dir=tmp_dir.name, delete=False))
                 template_file = stack.enter_context(
-                    open(template_path, "r"))
+                    open(template.path, "r"))
 
                 for line in template_file:
                     new_line = line
@@ -144,10 +104,9 @@ class SyncCommand(Command):
             raise InputError(*input_errors)
 
         # Overwrite source files with updated template files.
-        for file_tuple in zip(tmp_paths, template_pairs):
-            tmp_path, (template_path, source_path) = file_tuple
-            os.makedirs(os.path.dirname(source_path), exist_ok=True)
-            shutil.move(tmp_path, source_path)
+        for tmp_path, template in zip(tmp_paths, templates):
+            os.makedirs(os.path.dirname(template.source_path), exist_ok=True)
+            shutil.move(tmp_path, template.source_path)
 
         # The sync is now complete. Update the time of the last sync in the
         # info file.
