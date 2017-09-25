@@ -22,7 +22,7 @@ import os
 import json
 import time
 import datetime
-from typing import Any, Optional
+from typing import Any, Optional, Tuple
 
 from codot import SETTINGS_FILE, INFO_FILE, CONFIG_EXT, HOME_DIR
 from codot.exceptions import FileParseError
@@ -115,16 +115,32 @@ class ConfigFile:
         """Set individual config values."""
         self.raw_vals[key] = value
 
+    @classmethod
+    def readline(cls, line: str) -> Optional[Tuple[str, str]]:
+        """Parse a line for a key-value pair.
+
+        Args:
+            line: The line of the config file to read.
+
+        Returns:
+            A tuple containing the key and value if the line contains them and
+            None otherwise.
+        """
+        if (not cls.COMMENT_REGEX.search(line)
+                and cls.SEPARATOR in line):
+            key, value = line.partition(cls.SEPARATOR)[::2]
+            return key.strip(), value.strip()
+
     def read(self) -> None:
         """Parse file for key-value pairs and save in a dictionary."""
         try:
             with open(self.path) as file:
                 for line in file:
-                    # Skip line if it is a comment.
-                    if (not self.COMMENT_REGEX.search(line)
-                            and self.SEPARATOR in line):
-                        key, value = line.partition(self.SEPARATOR)[::2]
-                        self.raw_vals[key.strip()] = value.strip()
+                    try:
+                        key, value = self.readline(line)
+                        self.raw_vals[key] = value
+                    except TypeError:
+                        continue
         except OSError:
             raise FileParseError("could not open the configuration file")
 

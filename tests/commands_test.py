@@ -31,11 +31,12 @@ from codot import (
     PRIORITY_FILE, CONFIG_EXT, CONFIG_DIR, TEMPLATES_DIR, HOME_DIR)
 from codot.exceptions import InputError
 from codot.utils import rm_ext, add_ext
+from codot.user_files import UserConfigFile, Role, TemplateFile
+from codot.container import ProgramData
 from codot.commands.add_template import AddTemplateCommand
+from codot.commands.remove_template import RemoveTemplateCommand
 from codot.commands.role import RoleCommand
 from codot.commands.sync import SyncCommand
-from codot.container import ProgramData
-from codot.user_files import UserConfigFile, Role, TemplateFile
 
 real_open = builtins.open
 
@@ -58,7 +59,7 @@ def copy_config(fs):
 
 @pytest.fixture
 def fake_files(fs, copy_config) -> FakeFilePaths:
-    """Create fake files for testing, using different identifier formats."""
+    """Create fake files for testing."""
     files = FakeFilePaths(
         Role("color_scheme", CONFIG_DIR),
         UserConfigFile(os.path.join(CONFIG_DIR, "desktop.conf")),
@@ -107,7 +108,7 @@ def fake_files(fs, copy_config) -> FakeFilePaths:
     return files
 
 
-class TestTemplateCommand:
+class TestAddTemplateCommand:
     @pytest.fixture
     def patch_editor(self, monkeypatch):
         def edit_text_file(filepath):
@@ -142,6 +143,56 @@ class TestTemplateCommand:
 
         with open(fake_files.template.path) as file:
             assert file.read() == expected_output
+
+
+class TestRemoveTemplateCommand:
+    def test_nonexistent_template(self, fake_files):
+        """Specifying a nonexistent template raises an exception."""
+        os.remove(fake_files.template.path)
+        with pytest.raises(InputError):
+            cmd = RemoveTemplateCommand([fake_files.template.source_path])
+            cmd.main()
+
+    def test_remove_template_file(self, fake_files):
+        """The template file is removed."""
+        cmd = RemoveTemplateCommand([fake_files.template.source_path])
+        cmd.main()
+
+        assert not os.path.isfile(fake_files.template.path)
+
+    def test_remove_unused_options(self, fs, fake_files):
+        """Unused options are removed from the config files."""
+        new_template = TemplateFile(".Xresources", TEMPLATES_DIR)
+        fs.CreateFile(os.path.join(
+            HOME_DIR, os.path.relpath(new_template.path, TEMPLATES_DIR)))
+        fs.CreateFile(
+            new_template.path, contents=textwrap.dedent("""\
+                {{FontSize}}
+                {{ForegroundColor}}
+                {{BackgroundColor}}
+                """))
+
+        cmd = RemoveTemplateCommand([fake_files.template.source_path])
+        cmd.main()
+
+        solarized_output = textwrap.dedent("""\
+            ForegroundColor=#93a1a1
+            BackgroundColor=#002b36
+            """)
+        zenburn_output = textwrap.dedent("""\
+            ForegroundColor=#ffffff
+            BackgroundColor=#000000
+            """)
+        desktop_output = textwrap.dedent("""\
+            FontSize=12
+            """)
+
+        with open(fake_files.role.get_configs()[0].path) as file:
+            assert file.read() == solarized_output
+        with open(fake_files.role.get_configs()[1].path) as file:
+            assert file.read() == zenburn_output
+        with open(fake_files.config.path) as file:
+            assert file.read() == desktop_output
 
 
 class TestRoleCommand:

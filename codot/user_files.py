@@ -214,7 +214,7 @@ class UserFiles:
             and role in the config directory.
         """
         all_config_paths = []
-        for entry in os.scandir(self.config_dir):
+        for entry in rec_scan(self.config_dir):
             if entry.name.endswith(CONFIG_EXT):
                 all_config_paths.append(entry.path)
 
