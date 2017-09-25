@@ -163,8 +163,7 @@ class TestRemoveTemplateCommand:
     def test_remove_unused_options(self, fs, fake_files):
         """Unused options are removed from the config files."""
         new_template = TemplateFile(".Xresources", TEMPLATES_DIR)
-        fs.CreateFile(os.path.join(
-            HOME_DIR, os.path.relpath(new_template.path, TEMPLATES_DIR)))
+        fs.CreateFile(new_template.source_path)
         fs.CreateFile(
             new_template.path, contents=textwrap.dedent("""\
                 {{FontSize}}
@@ -267,7 +266,7 @@ class TestSyncCommand:
         cmd = SyncCommand()
         cmd.main()
 
-        assert fake_files.template.source_path is None
+        assert not os.path.exists(fake_files.template.source_path)
 
     @pytest.mark.parametrize("id_format", ["{{%s}}", "__%s__", "${%s}"])
     def test_propagate_config_changes(

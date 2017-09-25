@@ -46,17 +46,10 @@ class TemplateFile:
         """The path of the template file's corresponding source file.
 
         Returns:
-            The path of the source file if it exists or None if it does not.
+            The path of the source file.
         """
-        potential_source_path = os.path.join(
+        return os.path.join(
             HOME_DIR, os.path.relpath(self.path, self.base_dir))
-        try:
-            if not os.path.isfile(potential_source_path):
-                return None
-            else:
-                return potential_source_path
-        except FileNotFoundError:
-            return None
 
     def get_identifier_names(self, id_format: str) -> List[str]:
         """Get all identifier names used in the template file.
@@ -256,27 +249,24 @@ class UserFiles:
             A list containing a TemplateFile object for each template in the
             templates directory.
         """
-        relative_paths = []
+        templates = []
         for entry in rec_scan(self.templates_dir):
             if not entry.is_file():
                 continue
 
-            template_path = entry.path
-            source_path = os.path.join(
-                HOME_DIR, os.path.relpath(entry.path, self.templates_dir))
+            template = TemplateFile(
+                os.path.relpath(entry.path, self.templates_dir),
+                self.templates_dir)
 
             try:
-                if not os.path.isfile(source_path):
+                if not os.path.isfile(template.source_path):
                     continue
             except FileNotFoundError:
                 continue
 
-            relative_paths.append(
-                os.path.relpath(template_path, self.templates_dir))
+            templates.append(template)
 
-        return [
-            TemplateFile(relative_path, self.templates_dir)
-            for relative_path in relative_paths]
+        return templates
 
     def get_roles(self) -> List[Role]:
         """Get a list of all roles.
