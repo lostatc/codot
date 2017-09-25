@@ -23,6 +23,7 @@ import tempfile
 from typing import List
 
 from codot import HOME_DIR
+from codot.exceptions import InputError
 from codot.utils import open_text_editor
 from codot.commandbase import Command
 from codot.user_files import TemplateFile
@@ -46,6 +47,11 @@ class AddTemplateCommand(Command):
         with tempfile.TemporaryDirectory(prefix="codot-") as tmp_dir_path:
             for source_path in self.files:
                 abs_source_path = os.path.abspath(source_path)
+
+                if not os.path.isfile(abs_source_path):
+                    raise InputError("the file '{0}' does not exist".format(
+                        abs_source_path))
+
                 template = TemplateFile(
                     os.path.relpath(abs_source_path, HOME_DIR),
                     self.user_files.templates_dir)
