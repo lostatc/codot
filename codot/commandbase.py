@@ -73,5 +73,4 @@ class Command(abc.ABC):
         try:
             self._lock_socket.bind("\0" + "codot-" + str(os.getuid()))
         except socket.error:
-            raise StatusError(
-                "another operation on this profile is already taking place")
+            raise StatusError("the program is already doing something")
