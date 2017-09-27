@@ -12,7 +12,7 @@ setup(
     tests_require=["pytest", "pyfakefs"],
     python_requires=">=3.5",
     extras_require={
-        "Colored output in Windows": ["colorama"]}
+        "Colored output in Windows": ["colorama"]},
     data_files=[
         ("bin",
             ["scripts/codot", "scripts/codotd"]),
