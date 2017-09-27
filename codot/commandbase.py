@@ -24,9 +24,7 @@ import socket
 import shutil
 from typing import Optional
 
-from codot import (
-    PROGRAM_DIR, TEMPLATES_DIR, CONFIG_DIR, PRIORITY_FILE, SETTINGS_FILE,
-    CONFIG_EXT)
+from codot import PROGRAM_DIR, TEMPLATES_DIR, CONFIG_DIR, SETTINGS_FILE
 from codot.user_files import UserFiles
 from codot.exceptions import StatusError
 
@@ -45,7 +43,6 @@ class Command(abc.ABC):
         os.makedirs(PROGRAM_DIR, exist_ok=True)
         os.makedirs(TEMPLATES_DIR, exist_ok=True)
         os.makedirs(CONFIG_DIR, exist_ok=True)
-        open(PRIORITY_FILE, "a").close()
         if not os.path.isfile(SETTINGS_FILE):
             # TODO: Get this path from setup.py instead of hardcoding it.
             shutil.copy(
@@ -53,7 +50,7 @@ class Command(abc.ABC):
                 SETTINGS_FILE)
 
         self._lock_socket = None
-        self.user_files = UserFiles(CONFIG_DIR, TEMPLATES_DIR, PRIORITY_FILE)
+        self.user_files = UserFiles(CONFIG_DIR, TEMPLATES_DIR)
 
     @abc.abstractmethod
     def main(self) -> None:

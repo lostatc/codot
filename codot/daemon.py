@@ -57,7 +57,8 @@ class Daemon(Command):
             template_paths = {
                 template.path for template in self.user_files.get_templates()}
             config_paths = {
-                config.path for config in self.user_files.get_configs()}
+                config.path for config in self.user_files.get_configs(
+                    enter_roles=True)}
 
             if event.pathname in template_paths | config_paths:
                 cmd = subprocess.Popen(

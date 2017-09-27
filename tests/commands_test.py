@@ -27,8 +27,7 @@ from typing import NamedTuple
 import pytest
 
 import codot
-from codot import (
-    PRIORITY_FILE, CONFIG_EXT, CONFIG_DIR, TEMPLATES_DIR, HOME_DIR)
+from codot import CONFIG_EXT, CONFIG_DIR, TEMPLATES_DIR, HOME_DIR
 from codot.exceptions import InputError
 from codot.utils import rm_ext, add_ext
 from codot.user_files import UserConfigFile, Role, TemplateFile
@@ -100,10 +99,6 @@ def fake_files(fs, copy_config) -> FakeFilePaths:
     # Create source files.
     fs.CreateFile(os.path.join(
         HOME_DIR, os.path.relpath(files.template.path, TEMPLATES_DIR)))
-
-    # Create 'priority' file.
-    with open(PRIORITY_FILE, "w") as file:
-        file.write("\n".join([files.role.name, files.config.name]))
 
     return files
 
@@ -252,8 +247,7 @@ class TestSyncCommand:
 
     def test_missing_identifiers(self, fs, fake_files):
         """Identifiers not found in a config file raise an exception."""
-        with open(PRIORITY_FILE, "w") as file:
-            file.write(fake_files.config.name)
+        os.remove(fake_files.role.symlink_path)
 
         cmd = SyncCommand()
         with pytest.raises(InputError):

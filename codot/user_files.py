@@ -153,31 +153,6 @@ class Role:
         return UserConfigFile(link_destination)
 
 
-class PriorityFile:
-    """Manage a priority file.
-
-    This file is used for setting the priority of different configs and
-    roles as well as keeping track of which ones are enabled.
-
-    Attributes:
-         path: The path of the priority file.
-    """
-    def __init__(self, path: str) -> None:
-        self.path = path
-
-    def get_config_names(self) -> List[str]:
-        """Get a priority-ordered list of names of enabled configs and roles.
-
-        Returns:
-            A list of names of all enabled config files and roles, sorted from
-            highest-priority to lowest-priority:
-        """
-        with open(self.path) as file:
-            return [
-                rm_ext(line.strip(), CONFIG_EXT)
-                for line in file if line.strip()]
-
-
 class UserFiles:
     """Read and write user-created files.
 
@@ -186,41 +161,31 @@ class UserFiles:
             files.
         templates_dir: The path of the directory containing the user's
             template files.
-        priority_file: A PriorityFile object for the priority file.
     """
-    def __init__(
-            self, config_dir: str, templates_dir: str, priority_file: str
-            ) -> None:
+    def __init__(self, config_dir: str, templates_dir: str) -> None:
         self.config_dir = config_dir
         self.templates_dir = templates_dir
-        self.priority_file = PriorityFile(priority_file)
 
-    def get_configs(self, enabled_only=True) -> List[UserConfigFile]:
+    def get_configs(self, enter_roles=False) -> List[UserConfigFile]:
         """Get a list of all configs.
 
         Args:
-            enabled_only: Only include enabled config files. If this is True,
-                they are sorted from highest-priority to lowest-priority.
+            enter_roles: Include the non-selected configs from each role.
 
         Returns:
-            A list containing a UserConfigFile object for each config file
-            and role in the config directory.
+            A sorted list containing a UserConfigFile object for each config
+            file and role in the config directory.
         """
-        all_config_paths = []
-        for entry in rec_scan(self.config_dir):
-            if entry.name.endswith(CONFIG_EXT):
-                all_config_paths.append(entry.path)
-
-        if enabled_only:
-            config_paths = [
-                os.path.join(self.config_dir, add_ext(config_name, CONFIG_EXT))
-                for config_name in self.priority_file.get_config_names()]
-            # Ignore nonexistent configs that are in the priority file.
-            config_paths = [
-                config_path for config_path in config_paths
-                if config_path in all_config_paths]
+        if enter_roles:
+            scan_func = rec_scan
         else:
-            config_paths = all_config_paths
+            scan_func = os.scandir
+
+        config_paths = []
+        for entry in scan_func(self.config_dir):
+            if entry.name.endswith(CONFIG_EXT):
+                config_paths.append(entry.path)
+        config_paths.sort()
 
         return [UserConfigFile(path) for path in config_paths]
 
@@ -228,13 +193,12 @@ class UserFiles:
         """Get key-value pairs from all enabled configs and roles.
 
         Returns:
-            A dict of key-value pairs, where values from higher-priority
-            configs override values from lower-priority ones.
+            A dict of key-value pairs.
         """
-        # Reverse the order of the priority file so that values from
-        # higher-priority files overwrite values from lower-priority ones.
         config_values = {}
-        for config_file in reversed(self.get_configs(enabled_only=True)):
+        # Reverse the order so that values from configs that sort earlier in
+        # the list override those from configs that sort later in the list.
+        for config_file in reversed(self.get_configs(enter_roles=False)):
             config_file.read()
             config_values.update(config_file.raw_vals)
 

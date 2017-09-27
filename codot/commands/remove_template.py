@@ -80,7 +80,7 @@ class RemoveTemplateCommand(Command):
                     template.get_identifier_names(self.data.id_format))
 
             # Remove unused options from config files.
-            for config in self.user_files.get_configs(enabled_only=False):
+            for config in self.user_files.get_configs(enter_roles=True):
                 with contextlib.ExitStack() as stack:
                     tmp_file = stack.enter_context(
                         tempfile.NamedTemporaryFile(mode="w+"))
