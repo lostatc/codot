@@ -10,73 +10,58 @@ DESCRIPTION
 **codot** is a program for consolidating your dotfiles so that settings for
 multiple applications can be modified from one set of files.
 
-Concepts
---------
+Terminology
+-----------
 Source File
     A source file is a file created by an application to allow the user to
     configure that application (e.g. ~/.vimrc). There is an example source file
     under EXAMPLES_.
 
 Template File
-    A template file is a copy of a source file that has had certains values
-    replaced with user-defined identifiers.
-
-    All template files go in the 'templates' directory (see FILES_), which
-    mimics the file structure under the user's home directory. That means that
-    the template file for a config file located at ~/.config/foo will be
-    located at .config/foo under the templates directory, and that every
-    template file should correspond to exactly one source file. Template files
-    are ignored unless the corresponding source file exists. There is an
-    example template file under EXAMPLES_.
+    A template file is a copy of a source file that has had certain values
+    replaced with user-defined identifiers. There is an example template file
+    under EXAMPLES_.
 
 Config File
-    A config file is a file created by the user to consolidate settings from
-    multiple applications. Config files have the following format:
+    A config file is a file created by the user that contains consolidated
+    config options. Config files have the following format:
 
     * Lines starting with a hash symbol '#' serve as comments.
-    * Options in this file consist of key-value pairs separated by an equals
-      sign '=', where each key corresponds to the name of an identifier in one
-      or more template files.
+    * Options are key-value pairs separated by an equals sign '=', where each
+      key corresponds to the name of an identifier in one or more template
+      files.
 
-    Whenever the **sync** command is run, identifiers in each template file are
-    replaced with their corresponding values from the config files, and those
-    template files then overwrite the source files they were derived from.
-
-    Config files go in the 'config' directory (see FILES_), and each config
-    file must have the '.conf' extension. Config files are ignored unless their
-    names are included in the 'priority' file (see FILES_), and their order in
-    this file determines which config files take precedence when the same
-    identifier appears in multiple config files. There is an example config
-    file and an example 'priority' file under EXAMPLES_.
+    Config values are changed by the user in config files instead of in source
+    files. Config files go in the 'config' directory (see FILES_) and each
+    config file must have a '.conf' extension. There is an example config file
+    under EXAMPLES_.
 
 Identifier
-    An identifier is a string used in one or more template files to represent a
-    value in the corresponding source files. Each identifier has a name, which
-    is an alphanumeric substring that corresponds to the name of an option in
-    one or more config files. The default identifier format is '{{%s}}', where
-    '%s' represents the name of the identifier, but this can be changed in the
-    'settings.conf' file (see FILES_). The format of an identifier should be
-    such that it doesn't conflict with the syntax used in any of the source
-    files. Identifers in tempalte files can not span multiple lines.
+    An identifier is a string used in a template file to signal where a value
+    from a config file should be substituted in. Each identifier has a name,
+    which corresponds to the name of an option in a config file. The default
+    identifier format is '{{%s}},' where '%s' represents the name of the
+    identifier. The same identifier name can be used more than once and in more
+    than one template file.
 
 Role
-    A role is a way for multiple config files containing the same options to be
-    swapped out easily. Example use cases could include color schemes or
-    keybindings. A role consists of multiple config files in a subdirectory of
-    the 'config' directory (see FILES_), only one of which can be selected at
-    any one time. The name of this subdirectory determines the name of the
-    role. There is a symlink in the 'config' directory which points to the
-    selected role under the subdirectory, the name of which is the name of the
-    role plus the '.conf' extension.  The selected config file for a role can
-    be switched easily using the **role** command. The 'priority' file should
-    contain the name of the role instead of the name of any individual config
-    file.
+    A role a way to easily swap out different sets of config values. Each set
+    of values goes in a separate config file, one of which can fill the role at
+    a time. To create a role, put one or more config files in a subdirectory of
+    the 'config' directory (see FILES_). The name of this subdirectory is the
+    name of the role. The selected config file for a role can be switched using
+    the **role** command.
 
-Daemon
-------
-The daemon monitors the filesystem for changes and automatically runs the
-**sync** command whenever a config file, a template file or the 'priority' file
-is modified.
+Here are the steps for getting started with **codot**:
+
+#. Identify which values from which source files you want to consolidate.
+#. Use the **add-template** command to open the source files in your text
+   editor. Then, replace the selected values with identifiers. Name these
+   identifiers whatever you want.
+#. Create one or more config files that contain options named after the
+   identifiers you created.
+#. Populate those config files with values.
+#. Start the daemon or run the **sync** command.
 
 GLOBAL OPTIONS
 ==============
@@ -95,6 +80,10 @@ COMMANDS
     :func: help_item
     :item_id: commands
     :children:
+
+    sync
+        If the daemon is running, this command is run automatically whenever a
+        config file or template file is modified.
 
 EXAMPLES
 ========
@@ -146,53 +135,20 @@ This is an example of a config file.
     Font=DejaVuSans
     FontSize=12
 
-This is an example of what the file structure under the **codot** program
-directory could look like. ::
-
-    ~/.config/codot/
-    ├── config/
-    │   ├── color_scheme/
-    │   │   ├── solarized.conf
-    │   │   └── zenburn.conf
-    │   ├── color_scheme.conf -> color_scheme/solarized.conf
-    │   └── desktop.conf
-    ├── templates/
-    │   ├── .config/
-    │   │   └── i3/
-    │   │       └── config
-    │   └── .vimrc
-    ├── priority
-    └── settings.conf
-
-This is an example of what the 'priority' file could look like.
-
-.. code-block:: none
-    :linenos:
-
-    desktop
-    color_scheme
-
 FILES
 =====
 ~/.config/codot/
     This is the **codot** program directory. The program will respect
     XDG_CONFIG_HOME and, if it is set, put the directory there instead.
 
-    templates/
-        This directory is where all template files are stored. The file
-        structure under this directory should mimic the file structure under
-        the user's home directory.
-
     config/
         This directory is where all config files and roles are stored. Config
         files must have a '.conf' extension.
 
-    priority
-        This is a plain text file which stores the names of all enabled config
-        files and roles, one per line. Config files not in this list are
-        ignored. Entries higher up in the list take priority over entries lower
-        down the list when the same identifiers appear in multiple config
-        files.
+    templates/
+        This directory is where all template files are stored. The file
+        structure under this directory mimics the file structure under the
+        user's home directory.
 
     settings.conf
         This file is for configuring the behavior of **codot**.
