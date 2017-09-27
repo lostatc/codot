@@ -23,12 +23,10 @@ import subprocess
 
 import pyinotify
 
-from codot import (
-    HOME_DIR, CONFIG_DIR, TEMPLATES_DIR, PROGRAM_DIR, INFO_FILE, SETTINGS_FILE,
-    PRIORITY_FILE, CONFIG_EXT)
+from codot.commandbase import Command
 
 
-class Daemon:
+class Daemon(Command):
     """Watch for file modifications in config directory and initiate syncs.
 
     Every time a config file is modified, start a sync as a subprocess.
@@ -37,6 +35,7 @@ class Daemon:
         wm: The pyinotify watch manager.
     """
     def __init__(self) -> None:
+        super().__init__()
         self.wm = pyinotify.WatchManager()
 
     def main(self) -> None:
@@ -44,9 +43,10 @@ class Daemon:
         mask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_CREATE
         notifier = pyinotify.Notifier(self.wm, self._sync, read_freq=1)
         notifier.coalesce_events()
-        self.wm.add_watch(CONFIG_DIR, mask, rec=True, auto_add=True)
-        self.wm.add_watch(TEMPLATES_DIR, mask, rec=True, auto_add=True)
-        self.wm.add_watch(PROGRAM_DIR, mask, auto_add=True)
+        self.wm.add_watch(
+            self.user_files.config_dir, mask, rec=True, auto_add=True)
+        self.wm.add_watch(
+            self.user_files.templates_dir, mask, rec=True, auto_add=True)
 
         notifier.loop()
 
@@ -54,27 +54,12 @@ class Daemon:
         """Initiate a sync in a subprocess."""
         # IN_CLOSE_WRITE will always fire with IN_CREATE, so ignore IN_CREATE.
         if not event.dir and event.maskname == "IN_CLOSE_WRITE":
-            watch_path = self.wm.get_path(event.wd)
-            valid_file = False
-            if os.path.commonpath([
-                    watch_path, TEMPLATES_DIR]) == TEMPLATES_DIR:
-                # File is under the templates directory.
-                source_path = os.path.join(
-                    HOME_DIR, os.path.relpath(event.pathname, TEMPLATES_DIR))
-                if os.path.isfile(source_path):
-                    # The corresponding source file exists.
-                    valid_file = True
-            elif (os.path.commonpath([
-                    watch_path, CONFIG_DIR]) == CONFIG_DIR
-                    and event.name.endswith(CONFIG_EXT)):
-                # File is under the config directory and has the proper
-                # extension.
-                valid_file = True
-            elif event.pathname == PRIORITY_FILE:
-                # File is the priority file.
-                valid_file = True
+            template_paths = {
+                template.path for template in self.user_files.get_templates()}
+            config_paths = {
+                config.path for config in self.user_files.get_configs()}
 
-            if valid_file:
+            if event.pathname in template_paths | config_paths:
                 cmd = subprocess.Popen(
                     ["codot", "--debug", "sync"], bufsize=1,
                     stdin=subprocess.PIPE, stdout=subprocess.PIPE,
