@@ -1,10 +1,17 @@
 PREFIX ?= /usr
-BINDIR = $(PREFIX)/bin
-MANDIR = $(PREFIX)/share/man
+
+BIN_DIR = $(PREFIX)/bin
+UNIT_DIR = $(PREFIX)/lib/systemd/user
+MAN_DIR = $(PREFIX)/share/man
+LICENSE_DIR = $(PREFIX)/share/licenses/codot
+SHARE_DIR = $(PREFIX)/share/codot
+
+INSTALL_DATA = install -m 644
+INSTALL_BIN = install -m 755
 
 build:
 	make -C "docs" man
-	sed "s|@bindir@|$(BINDIR)|" "docs/unit/codot.service.in" > "docs/unit/codot.service"
+	sed "s|@bindir@|$(BIN_DIR)|" "docs/unit/codot.service.in" > "docs/unit/codot.service"
 	python3 setup.py build
 	python3 setup.py egg_info
 
@@ -13,11 +20,23 @@ install:
 		--prefix "$(PREFIX)" \
 		--single-version-externally-managed \
 		--record "installed_files.txt"
-	gzip -9f "$(MANDIR)/man1/codot.1"
+	$(INSTALL_BIN) "scripts/codot" "$(BIN_DIR)"
+	$(INSTALL_BIN) "scripts/codotd" "$(BIN_DIR)"
+	$(INSTALL_DATA) "docs/_build/man/codot.1" "$(MAN_DIR)/man1"
+	$(INSTALL_DATA) "docs/unit/codot.service" "$(UNIT_DIR)"
+	$(INSTALL_DATA) "LICENSE" "$(LICENSE_DIR)"
+	$(INSTALL_DATA) "docs/config/settings.conf" "$(SHARE_DIR)"
+	gzip -9f "$(MAN_DIR)/man1/codot.1"
 
 uninstall:
 	cat "installed_files.txt" | xargs rm -rf
 	rm -f "installed_files.txt"
+	rm -f "$(BIN_DIR)/codot"
+	rm -f "$(BIN_DIR)/codotd"
+	rm -f "$(MAN_DIR)/man1/codot.1.gz"
+	rm -f "$(UNIT_DIR)/codot.service"
+	rm -rf "$(LICENSE_DIR)"
+	rm -rf "$(SHARE_DIR)"
 
 clean:
 	rm -rf "build"
