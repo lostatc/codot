@@ -19,7 +19,7 @@ along with codot.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
 import subprocess
-from typing import Collection, List
+from typing import List
 
 
 def rm_ext(orig_string: str, substring: str) -> str:
