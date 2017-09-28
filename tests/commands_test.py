@@ -33,7 +33,7 @@ from codot.utils import rm_ext, add_ext
 from codot.user_files import UserConfigFile, Role, TemplateFile
 from codot.container import ProgramData
 from codot.commands.add_template import AddTemplateCommand
-from codot.commands.remove_template import RemoveTemplateCommand
+from codot.commands.rm_template import RmTemplateCommand
 from codot.commands.role import RoleCommand
 from codot.commands.sync import SyncCommand
 
@@ -140,17 +140,17 @@ class TestAddTemplateCommand:
             assert file.read() == expected_output
 
 
-class TestRemoveTemplateCommand:
+class TestRmTemplateCommand:
     def test_nonexistent_template(self, fake_files):
         """Specifying a nonexistent template raises an exception."""
         os.remove(fake_files.template.path)
         with pytest.raises(InputError):
-            cmd = RemoveTemplateCommand([fake_files.template.source_path])
+            cmd = RmTemplateCommand([fake_files.template.source_path])
             cmd.main()
 
     def test_remove_template_file(self, fake_files):
         """The template file is removed."""
-        cmd = RemoveTemplateCommand([fake_files.template.source_path])
+        cmd = RmTemplateCommand([fake_files.template.source_path])
         cmd.main()
 
         assert not os.path.isfile(fake_files.template.path)
@@ -166,7 +166,7 @@ class TestRemoveTemplateCommand:
                 {{BackgroundColor}}
                 """))
 
-        cmd = RemoveTemplateCommand([fake_files.template.source_path])
+        cmd = RmTemplateCommand([fake_files.template.source_path])
         cmd.main()
 
         solarized_output = textwrap.dedent("""\

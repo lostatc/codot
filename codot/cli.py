@@ -29,7 +29,7 @@ from codot.exceptions import InputError, ProgramError
 from codot.commandbase import Command
 from codot.daemon import Daemon
 from codot.commands.add_template import AddTemplateCommand
-from codot.commands.remove_template import RemoveTemplateCommand
+from codot.commands.rm_template import RmTemplateCommand
 from codot.commands.sync import SyncCommand
 from codot.commands.list import ListCommand
 from codot.commands.role import RoleCommand
@@ -80,13 +80,13 @@ def help_item() -> Item:
         "new one.")
     commands.add_text("\n")
 
-    remove_template_cmd = commands.add_definition(
-        "remove-template", "[options] files...",
+    rm_template_cmd = commands.add_definition(
+        "rm-template", "[options] files...",
         "Remove the template file for each of the source files specified. "
         "Remove from each config file any option that isn't being referenced "
-        "in at least one template file.", item_id="remove-template")
-    remove_template_cmd.add_text("\n")
-    remove_template_cmd.add_definition(
+        "in at least one template file.", item_id="rm-template")
+    rm_template_cmd.add_text("\n")
+    rm_template_cmd.add_definition(
         "-l, --leave-options", "",
         "Do not remove options from config files.")
     commands.add_text("\n")
@@ -199,14 +199,14 @@ def parse_args() -> argparse.Namespace:
         "files", nargs="+", metavar="files")
     parser_add_template.set_defaults(command="add-template")
 
-    parser_remove_template = subparsers.add_parser(
-        "remove-template", add_help=False)
-    parser_remove_template.add_argument("--help", action=HelpAction)
-    parser_remove_template.add_argument(
+    parser_rm_template = subparsers.add_parser(
+        "rm-template", add_help=False)
+    parser_rm_template.add_argument("--help", action=HelpAction)
+    parser_rm_template.add_argument(
         "--leave-options", "-l", action="store_true")
-    parser_remove_template.add_argument(
+    parser_rm_template.add_argument(
         "files", nargs="+", metavar="files")
-    parser_remove_template.set_defaults(command="remove-template")
+    parser_rm_template.set_defaults(command="rm-template")
 
     parser_sync = subparsers.add_parser("sync", add_help=False)
     parser_sync.add_argument("--help", action=HelpAction)
@@ -272,8 +272,8 @@ def daemon() -> int:
 def def_command(cmd_args) -> Command:
     if cmd_args.command == "add-template":
         return AddTemplateCommand(cmd_args.files, cmd_args.revise)
-    elif cmd_args.command == "remove-template":
-        return RemoveTemplateCommand(
+    elif cmd_args.command == "rm-template":
+        return RmTemplateCommand(
             cmd_args.files, cmd_args.leave_options)
     elif cmd_args.command == "sync":
         return SyncCommand(cmd_args.overwrite)

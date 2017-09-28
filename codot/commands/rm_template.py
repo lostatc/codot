@@ -1,4 +1,4 @@
-"""A class for the 'remove-template' command.
+"""A class for the 'rm-template' command.
 
 Copyright © 2017 Garrett Powell <garrett@gpowell.net>
 
@@ -30,12 +30,13 @@ from codot.commandbase import Command
 from codot.user_files import TemplateFile
 
 
-class RemoveTemplateCommand(Command):
-    """Run the "remove-template" command.
+class RmTemplateCommand(Command):
+    """Run the "rm-template" command.
 
     Attributes:
         files: The "files" argument for the command.
         leave_options: The "--leave-options" options was given.
+        data: Persistent program information such as config values.
     """
     def __init__(self, files: List[str], leave_options=False) -> None:
         super().__init__()
