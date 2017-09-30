@@ -80,18 +80,11 @@ def open_text_editor(filepath: str) -> int:
     Returns:
         The return code of the command.
     """
-    if os.name == "nt":
-        # On Windows, executing the text file directly invokes the default
-        # editor.
-        full_command = [filepath]
-    elif os.name == "posix":
-        unix_editors = [
-            os.getenv("VISUAL"), os.getenv("EDITOR"), "nano", "vi"]
-        edit_command = [
-            editor for editor in unix_editors if editor is not None][0]
-        full_command = [edit_command, filepath]
-    else:
-        raise OSError("unsupported platform")
+    editors = [
+        os.getenv("VISUAL"), os.getenv("EDITOR"), "nano", "vi"]
+    edit_command = [
+        editor for editor in editors if editor is not None][0]
+    full_command = [edit_command, filepath]
 
     return subprocess.run(full_command).returncode
 
