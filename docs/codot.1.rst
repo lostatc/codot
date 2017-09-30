@@ -23,18 +23,18 @@ Template File
     under EXAMPLES_.
 
 Config File
-    A config file is a file created by the user that contains consolidated
-    config options. Config files have the following format:
+    A config file is a file created by the user that acts as a centralized
+    place to modify values from multiple source files. Config files have the
+    following format:
 
     * Lines starting with a hash symbol '#' serve as comments.
     * Options are key-value pairs separated by an equals sign '=', where each
       key corresponds to the name of an identifier in one or more template
       files.
 
-    Config values are changed by the user in config files instead of in source
-    files. Config files go in the 'config' directory (see FILES_) and each
-    config file must have a '.conf' extension. There is an example config file
-    under EXAMPLES_.
+    Config files go in the 'config' directory (see FILES_) and each config file
+    must have a '.conf' extension. There is an example config file under
+    EXAMPLES_.
 
 Identifier
     An identifier is a string used in a template file to signal where a value
@@ -56,7 +56,7 @@ Here are the steps for getting started with **codot**:
 
 #. Identify which values from which source files you want to consolidate.
 #. Use the **add-template** command to open the source files in your text
-   editor. Then, replace the selected values with identifiers. Name these
+   editor. Then, replace the values you selected with identifiers. Name these
    identifiers whatever you want.
 #. Create one or more config files that contain options named after the
    identifiers you created.
