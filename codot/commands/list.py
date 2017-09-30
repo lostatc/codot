@@ -61,6 +61,10 @@ class ListCommand(Command):
         # Get a list of identifiers present in any config file.
         config_identifiers = self.user_files.get_config_values().keys()
 
+        if not template_identifiers:
+            print("\n-- No identifiers --\n")
+            return
+
         def add_color(identifier: str) -> str:
             if identifier in config_identifiers:
                 return identifier
