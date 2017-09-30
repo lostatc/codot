@@ -25,6 +25,7 @@ import re
 import contextlib
 
 from codot.exceptions import InputError
+from codot.utils import contract_user
 from codot.container import ProgramData
 from codot.commandbase import Command
 
@@ -53,10 +54,13 @@ class SyncCommand(Command):
         # Get a list of templates, possibly excluding templates that have been
         # modified since the last sync.
         templates = []
+        ignored_templates = []
         for template in self.user_files.get_templates():
             source_mtime = os.stat(template.source_path).st_mtime
             if source_mtime <= self.data.last_sync or overwrite_source:
                 templates.append(template)
+            else:
+                ignored_templates.append(template)
 
         config_values = self.user_files.get_config_values()
 
@@ -107,6 +111,15 @@ class SyncCommand(Command):
         for tmp_path, template in zip(tmp_paths, templates):
             os.makedirs(os.path.dirname(template.source_path), exist_ok=True)
             shutil.move(tmp_path, template.source_path)
+
+        # Print a list of updated and skipped source paths.
+        updated_output = [
+            "Updated {}".format(contract_user(template.source_path))
+            for template in templates]
+        ignored_output = [
+            "Skipped {}".format(contract_user(template.source_path))
+            for template in ignored_templates]
+        print("\n".join(updated_output + ignored_output))
 
         # The sync is now complete. Update the time of the last sync in the
         # info file.

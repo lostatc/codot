@@ -24,6 +24,7 @@ import contextlib
 from typing import List
 
 from codot import HOME_DIR
+from codot.utils import contract_user
 from codot.exceptions import InputError
 from codot.container import ProgramData
 from codot.commandbase import Command
@@ -62,7 +63,7 @@ class RmTemplateCommand(Command):
             except FileNotFoundError:
                 raise InputError(
                     "the source file '{0}' has no corresponding template "
-                    "file".format(template.source_path))
+                    "file".format(contract_user(template.source_path)))
 
             # Remove any empty parent directories.
             parent_dir = os.path.dirname(template.path)

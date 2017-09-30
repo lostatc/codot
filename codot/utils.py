@@ -21,6 +21,8 @@ import os
 import subprocess
 from typing import List
 
+from codot import HOME_DIR
+
 
 def rm_ext(orig_string: str, substring: str) -> str:
     """Remove the first occurrence of a substring starting from the right.
@@ -54,6 +56,18 @@ def add_ext(orig_string: str, substring: str) -> str:
         return rm_ext(orig_string, substring) + substring
     else:
         return orig_string
+
+
+def contract_user(path: str) -> str:
+    """Do the opposite of os.path.expanduser.
+
+    Args:
+        path: The absolute file path to modify.
+
+    Returns:
+        A new file path with the user's home directory replaced with a tilda.
+    """
+    return os.path.join("~", os.path.relpath(path, HOME_DIR))
 
 
 def rec_scan(path: str):

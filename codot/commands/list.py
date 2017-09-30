@@ -23,6 +23,7 @@ import re
 from terminaltables import SingleTable
 
 from codot import ANSI_RED, ANSI_NORMAL, HOME_DIR
+from codot.utils import contract_user
 from codot.commandbase import Command
 from codot.container import ProgramData
 
@@ -53,8 +54,7 @@ class ListCommand(Command):
         # Get a dict of identifiers from each template file.
         template_identifiers = {}
         for template in self.user_files.get_templates():
-            source_path = os.path.join(
-                "~", os.path.relpath(template.source_path, HOME_DIR))
+            source_path = contract_user(template.source_path)
             template_identifiers[source_path] = template.get_identifier_names(
                 self.data.id_format)
 
