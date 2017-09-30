@@ -98,3 +98,5 @@ class RmTemplateCommand(Command):
 
                     tmp_file.flush()
                     shutil.copy(tmp_file.name, config.path)
+
+        print("Removed {} template files".format(len(self.files)))
