@@ -41,18 +41,18 @@ class Daemon(Command):
     def main(self) -> None:
         """Start the daemon."""
         mask = pyinotify.IN_CLOSE_WRITE | pyinotify.IN_CREATE
-        notifier = pyinotify.Notifier(self.wm, self._sync, read_freq=1)
+        notifier = pyinotify.Notifier(self.wm, self._check_event, read_freq=1)
         notifier.coalesce_events()
         self.wm.add_watch(
             self.user_files.config_dir, mask, rec=True, auto_add=True)
         self.wm.add_watch(
             self.user_files.templates_dir, mask, rec=True, auto_add=True)
 
+        self._sync()
         notifier.loop()
 
-    def _sync(self, event) -> None:
-        """Initiate a sync in a subprocess."""
-        # IN_CLOSE_WRITE will always fire with IN_CREATE, so ignore IN_CREATE.
+    def _check_event(self, event) -> None:
+        """Conditionally initiate a sync based on the event."""
         if not event.dir and event.maskname == "IN_CLOSE_WRITE":
             template_paths = {
                 template.path for template in self.user_files.get_templates()}
@@ -61,15 +61,20 @@ class Daemon(Command):
                     enter_roles=True)}
 
             if event.pathname in template_paths | config_paths:
-                cmd = subprocess.Popen(
-                    ["codot", "--debug", "sync"], bufsize=1,
-                    stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE, universal_newlines=True)
+                self._sync()
 
-                # Print the subprocess's stderr to stderr so that it is
-                # added to the journal.
-                for line in cmd.stderr:
-                    if line:
-                        print(line, file=sys.stderr, end="")
-                cmd.wait()
-                sys.stderr.flush()
+    @staticmethod
+    def _sync() -> None:
+        """Initiate a sync in a subprocess."""
+        cmd = subprocess.Popen(
+            ["codot", "--debug", "sync"], bufsize=1,
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE, universal_newlines=True)
+
+        # Print the subprocess's stderr to stderr so that it is added to the
+        # journal.
+        for line in cmd.stderr:
+            if line:
+                print(line, file=sys.stderr, end="")
+        cmd.wait()
+        sys.stderr.flush()
