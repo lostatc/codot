@@ -51,13 +51,15 @@ class SyncCommand(Command):
 
         overwrite_source = bool(self.overwrite or self.data.overwrite_always)
 
-        # Get a list of templates, possibly excluding templates that have been
-        # modified since the last sync.
+        # Get a list of templates, possibly excluding templates whose source
+        # files have been modified by the user.
         templates = []
         ignored_templates = []
         for template in self.user_files.get_templates():
             source_mtime = os.stat(template.source_path).st_mtime
-            if source_mtime <= self.data.last_sync or overwrite_source:
+            source_path = contract_user(template.source_path)
+            if (source_mtime <= self.data.last_sync[source_path]
+                    or overwrite_source):
                 templates.append(template)
             else:
                 ignored_templates.append(template)
@@ -123,5 +125,7 @@ class SyncCommand(Command):
 
         # The sync is now complete. Update the time of the last sync in the
         # info file.
-        self.data.last_sync = time.time()
+        for template in templates:
+            source_path = contract_user(template.source_path)
+            self.data.last_sync[source_path] = time.time()
         self.data.write()

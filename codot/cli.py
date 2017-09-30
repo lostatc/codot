@@ -93,14 +93,15 @@ def help_item() -> Item:
 
     sync_cmd = commands.add_definition(
         "sync", "[options]",
-        "Update source files with changes from config files, but only if "
-        "those source files have not been modified since the last sync.",
+        "Update source files with changes from config files. If those source "
+        "files have been modified by the user since they were last synced, "
+        "skip them.",
         item_id="sync")
     sync_cmd.add_text("\n")
     sync_cmd.add_definition(
         "-o, --overwrite", "",
-        "Overwrite the source files even if they've been modified since the "
-        "last sync.")
+        "Update source files even if they've been modified by the user since "
+        "they were last synced.")
     commands.add_text("\n")
 
     list_cmd = commands.add_definition(

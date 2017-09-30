@@ -48,7 +48,7 @@ class ProgramData:
 
     def generate(self) -> None:
         """Generate files storing persistent data."""
-        self.last_sync = time.time()
+        self._info_file.generate()
         self.write()
 
     def write(self) -> None:
@@ -69,21 +69,28 @@ class ProgramData:
         """The format for identifiers in the template files."""
         return self._cfg_file.vals["IdentifierFormat"]
 
-    @property
-    def last_sync(self) -> float:
-        """The time of the last sync in seconds since the epoch."""
-        raw_value = self._info_file.vals["LastSync"]
+    @DictProperty
+    def last_sync(self, key: str) -> float:
+        """The time a file was last synced in seconds since the epoch.
+
+        This returns the current time if the file has not yet been synced.
+        """
+        try:
+            raw_value = self._info_file.vals["LastSync"][key]
+        except KeyError:
+            return time.time()
         return datetime.datetime.strptime(
             raw_value, "%Y-%m-%dT%H:%M:%S.%f").replace(
-            tzinfo=datetime.timezone.utc).timestamp()
+                tzinfo=datetime.timezone.utc).timestamp()
 
     @last_sync.setter
-    def last_sync(self, value: float) -> None:
+    def last_sync(self, key: str, value: float) -> None:
         # Use strftime() instead of isoformat() because the latter
         # doesn't print the decimal point if the microsecond is 0,
         # which would prevent it from being parsed by strptime().
-        self._info_file.vals["LastSync"] = datetime.datetime.utcfromtimestamp(
-            value).strftime("%Y-%m-%dT%H:%M:%S.%f")
+        self._info_file.vals["LastSync"][key] = (
+            datetime.datetime.utcfromtimestamp(value).strftime(
+                "%Y-%m-%dT%H:%M:%S.%f"))
 
 
 class ConfigFile:
@@ -284,3 +291,7 @@ class ProgramInfoFile(JSONFile):
     def __init__(self, path: str) -> None:
         super().__init__(path)
         self.vals = {}
+
+    def generate(self) -> None:
+        """Set initial values."""
+        self.vals["LastSync"] = {}

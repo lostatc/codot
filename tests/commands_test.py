@@ -231,13 +231,13 @@ class TestSyncCommand:
     @pytest.mark.parametrize("overwrite", [True, False])
     def test_overwrite_source_files(self, fs, fake_files, overwrite):
         """Modified source files are ignored unless otherwise specified."""
-        # Set mtime of source file to be more recent than the time of the last
-        # sync in the info file.
-        data = ProgramData()
-        data.generate()
-        os.utime(fake_files.template.source_path, times=None)
-
+        # Add the source file to the info file.
         cmd = SyncCommand(overwrite=overwrite)
+        cmd.main()
+
+        # Truncate the file so that its mtime is more recent that the time of
+        # the last sync in the info file.
+        open(fake_files.template.source_path, "w").close()
         cmd.main()
 
         if overwrite:
