@@ -72,3 +72,5 @@ class AddTemplateCommand(Command):
                     continue
                 os.makedirs(os.path.dirname(template.path), exist_ok=True)
                 shutil.move(tmp_file_path, template.path)
+
+        print("Created {} template files".format(len(self.files)))
