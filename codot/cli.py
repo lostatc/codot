@@ -23,7 +23,7 @@ import sys
 import argparse
 import pkg_resources
 
-from linotype import DefinitionStyle, Formatter, Item
+from linotype import DefinitionStyle, Item
 
 from codot.exceptions import InputError, ProgramError
 from codot.commandbase import Command
@@ -41,13 +41,11 @@ def help_item() -> Item:
     Returns:
         An Item object with the message.
     """
-    formatter = Formatter()
-    root_item = Item(formatter)
+    root_item = Item()
 
     usage = root_item.add_text("Usage:", item_id="usage")
     usage.add_definition(
-        "codot", "[global_options] command [command_options] [command_args]",
-        "")
+        "codot", "[global_options] command [command_args]", "")
     usage.add_text("\n")
 
     global_opts = root_item.add_text("Global Options:", item_id="global_opts")
@@ -107,7 +105,7 @@ def help_item() -> Item:
     list_cmd = commands.add_definition(
         "list", "[options]",
         "List all identifiers and highlight the ones that aren't in any "
-        "enabled config file.", item_id="list")
+        "config file.", item_id="list")
     list_cmd.add_text("\n")
     list_cmd.add_definition(
         "-g, --group", "",

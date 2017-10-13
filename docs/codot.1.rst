@@ -68,7 +68,7 @@ GLOBAL OPTIONS
 .. This imports documentation from the code.
 .. linotype::
     :filepath: ../codot/cli.py
-    :func: help_item
+    :function: help_item
     :item_id: global_opts
     :children:
 
@@ -77,7 +77,7 @@ COMMANDS
 .. This imports documentation from the code.
 .. linotype::
     :filepath: ../codot/cli.py
-    :func: help_item
+    :function: help_item
     :item_id: commands
     :children:
 
