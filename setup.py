@@ -11,8 +11,6 @@ setup(
     install_requires=["Sphinx", "pyinotify", "linotype", "terminaltables"],
     tests_require=["pytest", "pyfakefs"],
     python_requires=">=3.5",
-    extras_require={
-        "Colored output in Windows": ["colorama"]},
     packages=[
         "codot", "codot.commands"
         ]
