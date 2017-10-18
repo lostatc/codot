@@ -6,8 +6,8 @@ MAN_DIR = $(PREFIX)/share/man
 LICENSE_DIR = $(PREFIX)/share/licenses/codot
 SHARE_DIR = $(PREFIX)/share/codot
 
-INSTALL_DATA = install -m 644
-INSTALL_BIN = install -m 755
+INSTALL_DATA = install -m 644 -D
+INSTALL_BIN = install -m 755 -D
 
 build:
 	make -C "docs" man
@@ -20,12 +20,12 @@ install:
 		--prefix "$(PREFIX)" \
 		--single-version-externally-managed \
 		--record "installed_files.txt"
-	$(INSTALL_BIN) "scripts/codot" "$(BIN_DIR)"
-	$(INSTALL_BIN) "scripts/codotd" "$(BIN_DIR)"
-	$(INSTALL_DATA) "docs/_build/man/codot.1" "$(MAN_DIR)/man1"
-	$(INSTALL_DATA) "docs/unit/codot.service" "$(UNIT_DIR)"
-	$(INSTALL_DATA) "LICENSE" "$(LICENSE_DIR)"
-	$(INSTALL_DATA) "docs/config/settings.conf" "$(SHARE_DIR)"
+	$(INSTALL_BIN) "scripts/codot" -t "$(BIN_DIR)"
+	$(INSTALL_BIN) "scripts/codotd" -t "$(BIN_DIR)"
+	$(INSTALL_DATA) "docs/_build/man/codot.1" -t "$(MAN_DIR)/man1"
+	$(INSTALL_DATA) "docs/unit/codot.service" -t "$(UNIT_DIR)"
+	$(INSTALL_DATA) "LICENSE" -t "$(LICENSE_DIR)"
+	$(INSTALL_DATA) "docs/config/settings.conf" -t "$(SHARE_DIR)"
 	gzip -9f "$(MAN_DIR)/man1/codot.1"
 
 uninstall:
