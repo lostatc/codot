@@ -275,7 +275,7 @@ class TestSyncCommand:
 
         cmd = SyncCommand()
         monkeypatch.setattr(cmd.data, "read", cmd.data.generate)
-        monkeypatch.setattr(cmd.data.__class__, "id_format", id_format)
+        monkeypatch.setattr(type(cmd.data), "id_format", id_format)
         cmd.main()
 
         expected_content = textwrap.dedent("""\
