@@ -20,8 +20,8 @@ along with codot.  If not, see <http://www.gnu.org/licenses/>.
 import os
 from typing import Optional
 
-from terminaltables import SingleTable
 from codot import ANSI_NORMAL, ANSI_GREEN
+from codot.utils import BoxTable
 from codot.exceptions import InputError
 from codot.commandbase import Command
 from codot.user_files import Role
@@ -53,8 +53,8 @@ class RoleCommand(Command):
                 (role.name, role.selected.name)
                 for role in self.user_files.get_roles()]
             table_data.insert(0, ("Role", "Selected Config"))
-            table = SingleTable(table_data)
-            print(table.table)
+            table = BoxTable(table_data)
+            print(table.format())
             return
 
         self.role = Role(self.role_name, self.user_files.config_dir)

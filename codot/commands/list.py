@@ -20,10 +20,8 @@ along with codot.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import re
 
-from terminaltables import SingleTable
-
 from codot import ANSI_RED, ANSI_NORMAL, HOME_DIR
-from codot.utils import contract_user
+from codot.utils import contract_user, BoxTable
 from codot.commandbase import Command
 from codot.container import ProgramData
 
@@ -95,5 +93,5 @@ class ListCommand(Command):
                 for identifier in sorted(unique_identifiers))
 
         # Print data as a table.
-        table = SingleTable(table_data)
-        print(table.table)
+        table = BoxTable(table_data)
+        print(table.format())
