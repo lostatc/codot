@@ -68,7 +68,7 @@ GLOBAL OPTIONS
 .. This imports documentation from the code.
 .. linotype::
     :filepath: ../codot/cli.py
-    :function: help_item
+    :function: main_help_item
     :item_id: global_opts
     :children:
 
@@ -77,9 +77,7 @@ COMMANDS
 .. This imports documentation from the code.
 .. linotype::
     :filepath: ../codot/cli.py
-    :function: help_item
-    :item_id: commands
-    :children:
+    :function: command_help_item
 
     sync
         If the daemon is running, this command is run automatically whenever a

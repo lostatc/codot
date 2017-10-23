@@ -35,7 +35,7 @@ from codot.commands.list import ListCommand
 from codot.commands.role import RoleCommand
 
 
-def help_item() -> Item:
+def main_help_item() -> Item:
     """Structure the help message.
 
     Returns:
@@ -67,7 +67,45 @@ def help_item() -> Item:
 
     commands = root_item.add_text("Commands:", item_id="commands")
 
-    add_template_cmd = commands.add_definition(
+    commands.add_definition(
+        "add-template", "[options] files...",
+        "Open one or more source files in your editor and save them each as "
+        "a template file.")
+    commands.add_text("\n")
+
+    commands.add_definition(
+        "rm-template", "[options] files...",
+        "Remove the template file for each of the source files specified.")
+    commands.add_text("\n")
+
+    commands.add_definition(
+        "sync", "[options]",
+        "Update source files with changes from config files.")
+    commands.add_text("\n")
+
+    commands.add_definition(
+        "list", "[options]",
+        "List all identifiers and highlight the ones that aren't in any "
+        "config file.")
+    commands.add_text("\n")
+
+    commands.add_definition(
+        "role", "[role_name [config_name]]",
+        "Make config_name the currently selected config file in the role "
+        "named role_name.")
+
+    return root_item
+
+
+def command_help_item() -> Item:
+    """Structure the help message of each command.
+
+    Returns:
+        An Item object with the message.
+    """
+    root_item = Item()
+
+    add_template_cmd = root_item.add_definition(
         "add-template", "[options] files...",
         "Open one or more source files in your editor and save them each as "
         "a template file.", item_id="add-template")
@@ -76,9 +114,9 @@ def help_item() -> Item:
         "-r, --revise", "",
         "If the template file already exists, edit it instead of creating a "
         "new one.")
-    commands.add_text("\n")
+    root_item.add_text("\n")
 
-    rm_template_cmd = commands.add_definition(
+    rm_template_cmd = root_item.add_definition(
         "rm-template", "[options] files...",
         "Remove the template file for each of the source files specified. "
         "Remove from each config file any option that isn't being referenced "
@@ -87,9 +125,9 @@ def help_item() -> Item:
     rm_template_cmd.add_definition(
         "-l, --leave-options", "",
         "Do not remove options from config files.")
-    commands.add_text("\n")
+    root_item.add_text("\n")
 
-    sync_cmd = commands.add_definition(
+    sync_cmd = root_item.add_definition(
         "sync", "[options]",
         "Update source files with changes from config files. If those source "
         "files have been modified by the user since they were last synced, "
@@ -100,9 +138,9 @@ def help_item() -> Item:
         "-o, --overwrite", "",
         "Update source files even if they've been modified by the user since "
         "they were last synced.")
-    commands.add_text("\n")
+    root_item.add_text("\n")
 
-    list_cmd = commands.add_definition(
+    list_cmd = root_item.add_definition(
         "list", "[options]",
         "List all identifiers and highlight the ones that aren't in any "
         "config file.", item_id="list")
@@ -110,9 +148,9 @@ def help_item() -> Item:
     list_cmd.add_definition(
         "-g, --group", "",
         "Group identifiers by their template file.")
-    commands.add_text("\n")
+    root_item.add_text("\n")
 
-    role_cmd = commands.add_definition(
+    role_cmd = root_item.add_definition(
         "role", "[role_name [config_name]]",
         "Make config_name the currently selected config file in the role "
         "named role_name. If config_name is not specified, print a list of "
@@ -120,22 +158,6 @@ def help_item() -> Item:
         "specified, print a table of all roles.", item_id="role")
 
     return root_item
-
-
-def help_message(command: str) -> str:
-    """Get the help message.
-
-    Args:
-        command: The command to print the help message of. If 'None,' print the
-            general help message.
-
-    Returns:
-        The help message as a string.
-    """
-    if command:
-        return help_item().format(item_id=command)
-    else:
-        return help_item().format(levels=2)
 
 
 class CustomArgumentParser(argparse.ArgumentParser):
@@ -150,7 +172,11 @@ class HelpAction(argparse.Action):
         super().__init__(nargs=nargs, **kwargs)
 
     def __call__(self, parser, namespace, values, option_string=None) -> None:
-        print(help_message(namespace.command))
+        if namespace.command:
+            print(command_help_item().format(item_id=namespace.command))
+        else:
+            print(main_help_item().format())
+
         parser.exit()
 
 
