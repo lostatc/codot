@@ -23,7 +23,7 @@ import sys
 import argparse
 import pkg_resources
 
-from linotype import DefinitionStyle, Item
+from linotype import DefStyle, Item
 
 from codot.exceptions import InputError, ProgramError
 from codot.commandbase import Command
@@ -44,52 +44,52 @@ def main_help_item() -> Item:
     root_item = Item()
 
     usage = root_item.add_text("Usage:", item_id="usage")
-    usage.add_definition(
+    usage.add_def(
         "codot", "[global_options] command [command_args]", "")
     usage.add_text("\n")
 
     global_opts = root_item.add_text("Global Options:", item_id="global_opts")
-    global_opts.formatter.definition_style = DefinitionStyle.ALIGNED
-    global_opts.add_definition(
+    global_opts.formatter.def_style = DefStyle.ALIGNED
+    global_opts.add_def(
         "    --help", "",
         "Print a usage message and exit.")
-    global_opts.add_definition(
+    global_opts.add_def(
         "    --version", "",
         "Print the version number and exit.")
-    global_opts.add_definition(
+    global_opts.add_def(
         "    --debug", "",
         "Print a full stack trace instead of an error message if an error "
         "occurs.")
-    global_opts.add_definition(
+    global_opts.add_def(
         "-q, --quiet", "",
         "Suppress all non-error output.")
     global_opts.add_text("\n")
 
     commands = root_item.add_text("Commands:", item_id="commands")
 
-    commands.add_definition(
+    commands.add_def(
         "add-template", "[options] files...",
         "Open one or more source files in your editor and save them each as "
         "a template file.")
     commands.add_text("\n")
 
-    commands.add_definition(
+    commands.add_def(
         "rm-template", "[options] files...",
         "Remove the template file for each of the source files specified.")
     commands.add_text("\n")
 
-    commands.add_definition(
+    commands.add_def(
         "sync", "[options]",
         "Update source files with changes from config files.")
     commands.add_text("\n")
 
-    commands.add_definition(
+    commands.add_def(
         "list", "[options]",
         "List all identifiers and highlight the ones that aren't in any "
         "config file.")
     commands.add_text("\n")
 
-    commands.add_definition(
+    commands.add_def(
         "role", "[role_name [config_name]]",
         "Make config_name the currently selected config file in the role "
         "named role_name.")
@@ -105,52 +105,52 @@ def command_help_item() -> Item:
     """
     root_item = Item()
 
-    add_template_cmd = root_item.add_definition(
+    add_template_cmd = root_item.add_def(
         "add-template", "[options] files...",
         "Open one or more source files in your editor and save them each as "
         "a template file.", item_id="add-template")
     add_template_cmd.add_text("\n")
-    add_template_cmd.add_definition(
+    add_template_cmd.add_def(
         "-r, --revise", "",
         "If the template file already exists, edit it instead of creating a "
         "new one.")
     root_item.add_text("\n")
 
-    rm_template_cmd = root_item.add_definition(
+    rm_template_cmd = root_item.add_def(
         "rm-template", "[options] files...",
         "Remove the template file for each of the source files specified. "
         "Remove from each config file any option that isn't being referenced "
         "in at least one template file.", item_id="rm-template")
     rm_template_cmd.add_text("\n")
-    rm_template_cmd.add_definition(
+    rm_template_cmd.add_def(
         "-l, --leave-options", "",
         "Do not remove options from config files.")
     root_item.add_text("\n")
 
-    sync_cmd = root_item.add_definition(
+    sync_cmd = root_item.add_def(
         "sync", "[options]",
         "Update source files with changes from config files. If those source "
         "files have been modified by the user since they were last synced, "
         "skip them.",
         item_id="sync")
     sync_cmd.add_text("\n")
-    sync_cmd.add_definition(
+    sync_cmd.add_def(
         "-o, --overwrite", "",
         "Update source files even if they've been modified by the user since "
         "they were last synced.")
     root_item.add_text("\n")
 
-    list_cmd = root_item.add_definition(
+    list_cmd = root_item.add_def(
         "list", "[options]",
         "List all identifiers and highlight the ones that aren't in any "
         "config file.", item_id="list")
     list_cmd.add_text("\n")
-    list_cmd.add_definition(
+    list_cmd.add_def(
         "-g, --group", "",
         "Group identifiers by their template file.")
     root_item.add_text("\n")
 
-    role_cmd = root_item.add_definition(
+    role_cmd = root_item.add_def(
         "role", "[role_name [config_name]]",
         "Make config_name the currently selected config file in the role "
         "named role_name. If config_name is not specified, print a list of "
